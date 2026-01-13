@@ -22,7 +22,7 @@ node_modules/
 # 忽略构建输出目录
 ui/dist/
 ui/build/
-
+ui/package-lock.json
 # 忽略环境配置文件 (通常包含密钥，不应上传)
 .env
 ui/.env.local
