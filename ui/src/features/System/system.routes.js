@@ -16,4 +16,6 @@ export default {
 
     // 3. 原有的系统信息列表 (如果有的话)
     '/system/info': load(() => import('./InfoSystemList.jsx')),
+
+    '/system/iframe': load(() => import('./IframeView.jsx')),
 };

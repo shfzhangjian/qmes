@@ -6,7 +6,7 @@
 import React, { useState, useMemo, useContext } from 'react';
 import { AppContext } from '../../context/AppContext';
 
-const NotificationCenter = ({ mode = 'page' }) => {
+const NotificationCenter = ({ mode = 'page' , onClose }) => {
     const { navigate } = useContext(AppContext);
     const [activeTab, setActiveTab] = useState('all'); // all, unread, read
     const [search, setSearch] = useState('');
@@ -55,8 +55,10 @@ const NotificationCenter = ({ mode = 'page' }) => {
 
     const totalPages = Math.ceil(filteredList.length / pageSize);
 
+    // 跳转处理
     const handleMaximize = () => {
         navigate('/msg/list');
+        if (onClose) onClose(); // 关键：关闭外部蒙层
     };
 
     return (

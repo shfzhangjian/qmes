@@ -247,7 +247,8 @@ const Header = () => {
 
     const togglePanel = (panel) => setActivePanel(activePanel === panel ? null : panel);
     const openFullModal = (config) => { setActivePanel(null); setModalConfig(config); };
-
+    // 关闭当前面板的辅助函数
+    const closePanel = () => setActivePanel(null);
     if (!currentUser) return null;
 
     return (
@@ -274,7 +275,7 @@ const Header = () => {
                         {activePanel === 'search' && (
                             <div className="header-dropdown panel-search" style={{width: '400px', height: '480px', display: 'flex', flexDirection: 'column', padding: 0, overflow:'hidden'}}>
                                 {/* 组件内部自带 Footer，Header 只有容器 */}
-                                <GlobalSearch mode="modal" />
+                                <GlobalSearch mode="modal" onClose={closePanel} />
                             </div>
                         )}
                     </div>
@@ -288,7 +289,7 @@ const Header = () => {
                         {activePanel === 'notice' && (
                             <div className="header-dropdown panel-notice" style={{width: '360px', height: '480px', display: 'flex', flexDirection: 'column', padding: 0, overflow:'hidden'}}>
                                 {/* 组件内部自带 Footer */}
-                                <NotificationCenter mode="modal" />
+                                <NotificationCenter mode="modal" onClose={closePanel} />
                             </div>
                         )}
                     </div>

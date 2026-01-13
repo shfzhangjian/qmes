@@ -1,7 +1,7 @@
 /**
  * @file: src/App.jsx
- * @version: v6.1.0 (Fix Context Method)
- * @description: 修复 setMegaMenuOpen 未定义的错误，改用 toggleMegaMenu
+ * @version: v6.2.0 (Breadcrumb Stack)
+ * @description: 更新面包屑渲染，支持多级导航回溯
  */
 import React, { useContext, Suspense } from 'react';
 import { AppContext, AppProvider } from './context/AppContext.jsx';
@@ -11,10 +11,10 @@ import MegaMenu from './features/Layout/MegaMenu.jsx';
 import AIAgent from './features/AIAgent/AIAgent.jsx';
 import Login from './features/Auth/Login.jsx';
 import Construction from './features/System/Construction.jsx';
-import componentMap from './router/componentMap.jsx'; // 引入路由表
+import componentMap from './router/componentMap.jsx';
 import './styles/index.css';
 
-// --- 错误边界 ---
+// ... (ErrorBoundary 保持不变) ...
 class ErrorBoundary extends React.Component {
     constructor(props) {
         super(props);
@@ -36,22 +36,16 @@ class ErrorBoundary extends React.Component {
     }
 }
 
-// --- 动态页面渲染器 ---
+// ... (PageRenderer 保持不变) ...
 const PageRenderer = () => {
     const { activePath } = useContext(AppContext);
-
-    // 1. 在注册表中查找组件
     const Component = componentMap[activePath];
-
-    // 2. 加载状态 UI
     const LoadingFallback = (
         <div style={{ padding: '50px', textAlign: 'center', color: '#999' }}>
             <i className="ri-loader-4-line spin" style={{ fontSize: '24px', marginRight: '8px' }}></i>
             正在加载资源模块...
         </div>
     );
-
-    // 3. 渲染逻辑
     if (Component) {
         return (
             <Suspense fallback={LoadingFallback}>
@@ -61,15 +55,15 @@ const PageRenderer = () => {
             </Suspense>
         );
     }
-
-    // 4. 404 / 建设中页面
     return <Construction />;
 };
 
 const AppLayout = () => {
     const {
         activePage,
-        toggleMegaMenu, // 使用 toggleMegaMenu 代替 setMegaMenuOpen
+        breadcrumbStack, // 获取面包屑栈
+        navigate, // 用于点击面包屑跳转
+        toggleMegaMenu,
         isLoading,
         isAuthenticated
     } = useContext(AppContext);
@@ -83,17 +77,28 @@ const AppLayout = () => {
 
             <Header />
 
-            {/* 点击主区域关闭菜单，使用 toggleMegaMenu(false) */}
             <div className="app-body" onClick={() => toggleMegaMenu(false)}>
                 <Sidebar />
                 <MegaMenu />
 
                 <main className="main-content">
-                    {/* 路径面包屑 */}
+                    {/* 增强型面包屑 */}
                     <div className="breadcrumb">
-                        <i className="ri-home-line"></i>
+                        <i className="ri-home-line" onClick={() => navigate('/dashboard')} style={{cursor:'pointer'}}></i>
+                        {breadcrumbStack.length > 0 && breadcrumbStack.map((crumb, i) => (
+                            <React.Fragment key={i}>
+                                <span>/</span>
+                                <span
+                                    className="crumb-link"
+                                    onClick={() => navigate(crumb.path)}
+                                    style={{cursor: 'pointer', color: '#666'}}
+                                >
+                                    {crumb.title}
+                                </span>
+                            </React.Fragment>
+                        ))}
                         <span>/</span>
-                        <span style={{fontWeight: '500'}}>{activePage}</span>
+                        <span style={{fontWeight: '500', color: '#333'}}>{activePage}</span>
                     </div>
 
                     <ErrorBoundary>

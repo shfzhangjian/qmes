@@ -19,13 +19,13 @@
     z-index: 100;
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     position: relative; /* 确保下拉菜单以此为基准 */
-    transition: padding-right 0.4s; /* 配合 AI 面板挤压 */
+    /*transition: padding-right 0.4s; 配合 AI 面板挤压 */
 }
 
 /* 配合 AI 面板的挤压效果 */
-body.aip-open .header {
-    padding-right: 470px;
-}
+/*body.aip-open .header {*/
+/*    padding-right: 470px;*/
+/*}*/
 
 .brand {
     display: flex; align-items: center; gap: 12px; cursor: pointer;
