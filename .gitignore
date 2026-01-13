@@ -1,0 +1,32 @@
+# --- IDEA 配置文件 ---
+.idea/
+*.iml
+*.iws
+
+# --- Python (ai 目录) ---
+# 忽略编译文件
+__pycache__/
+*.py[cod]
+
+# 忽略虚拟环境 (假设您的虚拟环境叫 venv 或 env)
+ai/venv/
+ai/env/
+ai/.venv/
+*.egg-info/
+
+# --- Node.js (ui 目录) ---
+# 必须忽略巨大的依赖包文件夹
+ui/node_modules/
+node_modules/
+
+# 忽略构建输出目录
+ui/dist/
+ui/build/
+
+# 忽略环境配置文件 (通常包含密钥，不应上传)
+.env
+ui/.env.local
+
+# --- 系统文件 ---
+.DS_Store
+Thumbs.db

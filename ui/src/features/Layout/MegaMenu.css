@@ -1,0 +1,167 @@
+/**
+ * @file: src/features/Layout/MegaMenu.css
+ * @description: 巨型菜单样式 - Windows 风格紧凑菜单 & 多级级联支持
+ * @version: v4.0.0
+ */
+
+/* 面板容器：类似 Windows 开始菜单的悬浮面板 */
+.mega-menu-panel {
+    position: absolute;
+    left: 64px; /* 紧贴 Sidebar */
+    top: 10px; /* 稍微留出一点顶部间隙 */
+    bottom: 10px;
+    width: 280px; /* 默认宽度变窄，更像菜单 */
+    background: rgba(255, 255, 255, 0.96); /* 微透明磨砂感 */
+    backdrop-filter: blur(10px);
+    box-shadow: 4px 0 24px rgba(0,0,0,0.12), 0 0 1px rgba(0,0,0,0.1);
+    z-index: 85;
+    display: flex;
+    flex-direction: column;
+    border-radius: 8px; /* 圆角面板 */
+    border: 1px solid rgba(0,0,0,0.06);
+    transform: translateX(-20px);
+    opacity: 0;
+    transition: all 0.2s cubic-bezier(0, 0, 0.2, 1);
+    pointer-events: none;
+}
+
+.mega-menu-panel.open {
+    transform: translateX(10px); /* 稍微偏离 Sidebar 一点 */
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Header */
+.mega-menu-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.mega-menu-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    display: flex; align-items: center; gap: 8px;
+}
+
+.menu-search-input {
+    width: 100%;
+    margin: 10px 20px 0;
+    padding: 6px 10px;
+    border: 1px solid #e5e5e5;
+    border-radius: 4px; /* Win风格输入框 */
+    font-size: 13px;
+    outline: none;
+    transition: 0.2s;
+    background: #fff;
+}
+.menu-search-input:focus {
+    border-color: #1890FF;
+    border-bottom: 2px solid #1890FF; /* 底部高亮 */
+}
+
+/* 列表容器 */
+.menu-groups-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px 6px; /* 极窄内边距 */
+    scrollbar-width: thin;
+}
+
+/* --- Windows 风格菜单项 (核心) --- */
+.rich-menu-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    margin: 2px 0;
+    border-radius: 4px; /* Win11 圆角 */
+    cursor: pointer;
+    transition: background 0.1s;
+    position: relative; /* 为子菜单定位 */
+    color: #333;
+}
+
+.rich-menu-item:hover {
+    background-color: #f0f0f0; /* Win 标准 Hover 灰 */
+}
+
+.item-icon-box {
+    width: 20px; height: 20px;
+    display: flex; align-items: center; justify-content: center;
+    margin-right: 12px;
+    color: #555;
+    font-size: 16px;
+}
+
+.rich-menu-item:hover .item-icon-box {
+    color: #333;
+}
+
+.item-content { flex: 1; min-width: 0; }
+
+.item-title-row {
+    display: flex; justify-content: space-between; align-items: center;
+}
+
+.item-title { font-size: 13px; font-weight: 500; }
+
+.item-desc {
+    font-size: 11px; color: #888;
+    margin-top: 2px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* 分组标题 */
+.group-header-label {
+    padding: 8px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #888;
+    text-transform: uppercase;
+    margin-top: 10px;
+    pointer-events: none;
+}
+
+/* --- 多级菜单 (Cascade Submenu) --- */
+.submenu-indicator {
+    font-size: 14px; color: #999; margin-left: auto;
+}
+
+/* 子菜单弹出层 */
+.submenu-popover {
+    position: absolute;
+    left: 100%; /* 向右弹出 */
+    top: -4px;
+    width: 240px;
+    background: rgba(255, 255, 255, 0.98);
+    border: 1px solid rgba(0,0,0,0.08);
+    box-shadow: 4px 4px 16px rgba(0,0,0,0.1);
+    border-radius: 6px;
+    padding: 6px;
+    display: none; /* 默认隐藏 */
+    z-index: 100;
+    margin-left: 4px;
+    animation: fadeIn 0.15s ease-out;
+}
+
+/* Hover 父级显示子菜单 */
+.rich-menu-item:hover > .submenu-popover {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateX(-5px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+/* 收藏星星 */
+.fav-icon {
+    font-size: 14px; color: #ddd; margin-left: 8px; opacity: 0; transition: 0.2s;
+}
+.rich-menu-item:hover .fav-icon { opacity: 1; }
+.fav-icon.active { opacity: 1; color: #FA8C16; }
+.fav-icon:hover { transform: scale(1.2); }

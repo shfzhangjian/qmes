@@ -1,0 +1,130 @@
+/**
+ * @file: src/features/Layout/Sidebar.css
+ * @description: 侧边栏样式，包含滚动指示器动画
+ */
+
+.sidebar {
+    width: 64px;
+    background: #fff;
+    border-right: 1px solid #e8e8e8;
+    display: flex;
+    flex-direction: column;
+    z-index: 90;
+    height: 100%;
+    position: relative; /* 为绝对定位的指示器提供基准 */
+}
+
+/* --- 移动端风格滚动条 (Mobile-like Scroll) --- */
+.sidebar.mobile-scroll .sidebar-scroll-content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-top: 10px;
+    /* 隐藏原生滚动条 */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE 10+ */
+    scroll-behavior: smooth;
+}
+
+.sidebar.mobile-scroll .sidebar-scroll-content::-webkit-scrollbar {
+    display: none; /* Chrome/Safari/Webkit */
+}
+
+/* --- 滚动指示器 (Scroll Indicators) --- */
+.scroll-indicator {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 24px;
+    background: rgba(255, 255, 255, 0.95);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #999;
+    cursor: pointer;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s, transform 0.2s;
+    z-index: 10;
+    font-size: 20px;
+    backdrop-filter: blur(2px);
+    border-right: 1px solid #e8e8e8; /* 补齐右边框 */
+}
+
+.scroll-indicator:hover {
+    color: #1890FF;
+    background: rgba(255, 255, 255, 1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.scroll-indicator.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.scroll-indicator.up {
+    top: 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.scroll-indicator.down {
+    bottom: 60px; /* 位于收藏按钮上方 (收藏按钮高约60px) */
+    border-top: 1px solid #f0f0f0;
+}
+
+/* 菜单项样式 */
+.menu-item {
+    width: 100%;
+    min-height: 64px;
+    padding: 8px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #666;
+    transition: all 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
+    position: relative;
+    border-left: 3px solid transparent;
+    flex-shrink: 0; /* 防止被压缩 */
+}
+
+.menu-item:hover {
+    color: #1890FF;
+    background-color: rgba(24, 144, 255, 0.02);
+}
+
+.menu-item.active {
+    color: #1890FF;
+    background-color: #e6f7ff;
+    border-left-color: #1890FF;
+}
+
+.menu-item i {
+    font-size: 22px;
+    margin-bottom: 4px;
+    transition: transform 0.2s;
+}
+
+.menu-item.active i {
+    transform: scale(1.1);
+}
+
+.menu-item span {
+    font-size: 12px;
+    transform: scale(0.9);
+    white-space: nowrap;
+    font-weight: 500;
+}
+
+/* 底部收藏按钮 */
+.menu-item.fav-trigger {
+    border-top: 1px solid #f0f0f0;
+    margin-top: auto; /* 确保吸底 */
+    background: #fff;
+    z-index: 11; /* 高于滚动指示器 */
+    position: relative;
+}
+.menu-item.fav-trigger:hover {
+    background-color: #fff7e6;
+}
