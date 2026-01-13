@@ -1,7 +1,7 @@
 /**
  * @file: src/services/api.js
- * @version: v3.0.0 (Org Structure Upgrade)
- * @description: 升级用户数据模型，支持复杂的部门/岗位结构及跨部门工作组(委员会)
+ * @version: v3.1.0 (Mock Data Enhanced)
+ * @description: 升级用户数据模型，支持复杂的部门/岗位结构及跨部门工作组，增加异常处理单相关的Mock数据
  * @createDate: 2026-01-13
  * @lastModified: 2026-01-13
  */
