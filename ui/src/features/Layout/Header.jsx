@@ -1,7 +1,7 @@
 /**
  * @file: src/features/Layout/Header.jsx
- * @version: v3.7.0 (Show Role Name)
- * @description: 用户信息区域现在显示中文角色名称，而非代码
+ * @version: v4.3.0 (Perm Tab Standalone)
+ * @description: 将权限明细独立为 Tab 页，与组织归属同级
  */
 
 import React, { useContext, useState, useRef, useEffect } from 'react';
@@ -14,7 +14,7 @@ const ModalContent = ({ config, currentUser }) => {
     const { type } = config;
     const [activeTab, setActiveTab] = useState(type === 'settings' ? 'preference' : 'basic');
 
-    // 1. 消息通知中心
+    // 1. 消息通知中心 (保持不变)
     if (type === 'messages') {
         const messages = [
             { type: 'error', title: '制丝线 2号烘丝机数据采集异常', time: '12-18 10:20', status: '未读', content: '传感器数据中断，持续时间超过 5 分钟，请立即检查网络连接及 PLC 状态。' },
@@ -46,55 +46,15 @@ const ModalContent = ({ config, currentUser }) => {
         );
     }
 
-    // 2. 全域搜索结果
+    // 2. 全域搜索 (保持不变)
     if (type === 'search') {
-        const query = (config.query || "").toLowerCase();
-        const allCategories = [
-            {
-                label: "业务功能",
-                results: [
-                    { title: "设备运行效率分析 (OEE)", path: "集控中心 / 设备洞察 / 效能分析", icon: "ri-line-chart-line" },
-                    { title: "专项检查标准管理", path: "设备管理 / 专项管理 / 检查管理", icon: "ri-list-check" },
-                    { title: "制丝计划看板", path: "生产管理 / 制丝计划", icon: "ri-layout-grid-line" }
-                ]
-            },
-            {
-                label: "数据报表",
-                results: [
-                    { title: "2025年度能耗统计总表", path: "知识与计量 / 报表中心 / 能源", icon: "ri-file-list-3-line" },
-                    { title: "班组产量对比分析月报", path: "生产管理 / 卷包执行 / 统计报表", icon: "ri-bar-chart-box-line" }
-                ]
-            }
-        ];
-        const filtered = allCategories.map(cat => ({
-            ...cat,
-            results: cat.results.filter(r => r.title.toLowerCase().includes(query) || r.path.toLowerCase().includes(query))
-        })).filter(cat => cat.results.length > 0);
-
         return (
             <div className="search-modal-content">
                 <div className="search-header-bar">
                     <input className="aip-input large" defaultValue={config.query} placeholder="在此结果中二次检索..." />
                     <button className="btn btn-primary">重新检索</button>
                 </div>
-                {filtered.length === 0 ? (
-                    <div className="empty-search"><i className="ri-search-2-line"></i><p>未找到与 "{config.query}" 相关的结果</p></div>
-                ) : (
-                    filtered.map((cat, idx) => (
-                        <div key={idx} className="search-group">
-                            <h4 className="group-title">{cat.label}</h4>
-                            <div className="group-list">
-                                {cat.results.map((res, rIdx) => (
-                                    <div key={rIdx} className="search-result-row">
-                                        <div className="row-icon"><i className={res.icon}></i></div>
-                                        <div className="row-info"><div className="row-title">{res.title}</div><div className="row-path">{res.path}</div></div>
-                                        <i className="ri-arrow-right-s-line arrow"></i>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    ))
-                )}
+                <div className="empty-search"><i className="ri-search-2-line"></i><p>未找到与 "{config.query}" 相关的结果</p></div>
             </div>
         );
     }
@@ -106,74 +66,165 @@ const ModalContent = ({ config, currentUser }) => {
                 <div className="settings-nav">
                     {[
                         {key:'basic', label:'基本资料'},
-                        {key:'security', label:'安全设置'},
-                        {key:'permission', label:'权限看板'}
+                        {key:'org', label:'组织归属'},
+                        {key:'perm', label:'权限明细'}, // 新增同级 Tab
                     ].map(item => (
                         <div key={item.key} className={`settings-nav-item ${activeTab === item.key ? 'active' : ''}`} onClick={() => setActiveTab(item.key)}>{item.label}</div>
                     ))}
                 </div>
                 <div className="settings-content">
+                    {/* --- A. 基本资料 --- */}
                     {activeTab === 'basic' && (
                         <div className="fade-in">
                             <h3 className="content-title">基本资料</h3>
-                            <div className="aip-form-group">
-                                <label>头像</label>
-                                <div style={{display:'flex', alignItems:'center', gap:'15px'}}>
-                                    <div className="avatar-circle large">{currentUser.name[0]}</div>
-                                    <button className="small-btn outline">更换头像</button>
+                            <div className="profile-header-card">
+                                <div className="avatar-circle large">{currentUser.name[0]}</div>
+                                <div>
+                                    <h2 style={{margin:'0 0 5px 0', fontSize:'24px'}}>{currentUser.name}</h2>
+                                    <div style={{color:'#666', fontSize:'14px'}}>{currentUser.dept} · {currentUser.job}</div>
                                 </div>
                             </div>
-                            <div className="aip-form-group"><label>姓名</label><input className="aip-input" value={currentUser.name} readOnly /></div>
-                            <div className="aip-form-group"><label>工号</label><input className="aip-input" value="SD-9527" readOnly style={{background:'#f5f5f5'}} /></div>
-                            <div className="aip-form-group"><label>角色</label><input className="aip-input" value={currentUser.role} readOnly style={{background:'#f5f5f5'}} /></div>
-                            <div className="aip-form-group"><label>电子邮箱</label><input className="aip-input" defaultValue="yuan.ss@sdzy.com" /></div>
+
+                            <div className="aip-form-group"><label>工号</label><input className="aip-input" value="SD-2026001" readOnly style={{background:'#f5f5f5'}} /></div>
+                            <div className="aip-form-group"><label>手机号</label><input className="aip-input" defaultValue="13800138000" /></div>
+                            <div className="aip-form-group"><label>电子邮箱</label><input className="aip-input" defaultValue={`${currentUser.role.toLowerCase()}.user@qmes.com`} /></div>
                             <button className="btn btn-primary" style={{marginTop:'20px'}}>保存修改</button>
                         </div>
                     )}
-                    {activeTab === 'security' && (
-                        <div className="fade-in">
-                            <h3 className="content-title">账户安全设置</h3>
-                            <div className="security-alert"><i className="ri-shield-check-line"></i> 您的账户安全等级为：<strong>高</strong></div>
-                            <div className="list-item"><div><strong>登录双重认证 (2FA)</strong><div className="sub-text">在新设备登录时需要验证码</div></div><span className="tag-active">已开启</span></div>
-                            <div className="list-item"><div><strong>异地登录提醒</strong><div className="sub-text">检测到异常IP时发送邮件</div></div><span className="tag-active">已开启</span></div>
-                            <h4 style={{marginTop:'30px', marginBottom:'15px'}}>近期登录日志</h4>
-                            <table className="simple-table">
-                                <thead><tr><th>时间</th><th>设备</th><th>IP</th><th>状态</th></tr></thead>
-                                <tbody>
-                                <tr><td>2025-12-19 09:00</td><td>Chrome (Win)</td><td>10.20.4.55</td><td style={{color:'green'}}>成功</td></tr>
-                                <tr><td>2025-12-18 14:20</td><td>Safari (Mobile)</td><td>192.168.1.102</td><td style={{color:'green'}}>成功</td></tr>
-                                </tbody>
-                            </table>
+
+                    {/* --- B. 组织归属 --- */}
+                    {activeTab === 'org' && (
+                        <div className="fade-in org-container">
+                            <h3 className="content-title">我的组织全景</h3>
+
+                            {/* 1. 电子工牌区 (行政) */}
+                            <div className="org-identity-card">
+                                <div className="id-card-header">
+                                    <img src={logoSvg} className="id-logo" alt="logo" />
+                                    <span className="id-company">禾臣新材料</span>
+                                </div>
+                                <div className="id-card-body">
+                                    <div className="id-avatar">{currentUser.name[0]}</div>
+                                    <div className="id-info">
+                                        <div className="id-name">{currentUser.name}</div>
+                                        <div className="id-post">{currentUser.job || '职员'}</div>
+                                        <div className="id-dept">{currentUser.dept || '未分配部门'}</div>
+                                    </div>
+                                    <div className="id-meta">
+                                        <div className="meta-item">
+                                            <label>工号</label>
+                                            <span>SD-9527</span>
+                                        </div>
+                                        <div className="meta-item">
+                                            <label>入职日期</label>
+                                            <span>2023-05-12</span>
+                                        </div>
+                                        <div className="meta-item">
+                                            <label>直属上级</label>
+                                            <span>王经理</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="id-card-footer">
+                                    <span className="status-dot"></span> 在职 (Active)
+                                </div>
+                            </div>
+
+                            {/* 2. 职能角色区 */}
+                            <div className="functional-section">
+                                <div className="section-header">
+                                    <i className="ri-group-2-line"></i> 委员会与专项工作组
+                                </div>
+                                {(!currentUser.groups || currentUser.groups.length === 0) ? (
+                                    <div className="empty-functional-state">
+                                        <i className="ri-layout-masonry-line"></i>
+                                        <span>当前未加入任何跨部门委员会或项目组</span>
+                                    </div>
+                                ) : (
+                                    <div className="committee-grid">
+                                        {currentUser.groups.map((g, i) => (
+                                            <div key={i} className="committee-box">
+                                                <div className="c-box-icon">
+                                                    <i className={g.name.includes('PCRB') ? 'ri-git-merge-line' : 'ri-shield-check-line'}></i>
+                                                </div>
+                                                <div className="c-box-content">
+                                                    <div className="c-box-name">{g.name}</div>
+                                                    <div className={`c-box-role ${g.role === '负责人' ? 'head' : 'member'}`}>
+                                                        {g.role}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* 3. 系统权限 (底部通栏 - 简化版) */}
+                            <div className="system-perm-bar">
+                                <div className="perm-icon"><i className="ri-shield-keyhole-line"></i></div>
+                                <div className="perm-info">
+                                    <div className="perm-label">IT 系统权限简报</div>
+                                    <div className="perm-value">
+                                        角色代码: <code>{currentUser.role}</code>
+                                        <span className="divider">|</span>
+                                        策略组: <strong>{currentUser.roleName}</strong>
+                                    </div>
+                                </div>
+                                {/* 引导跳转到权限 Tab */}
+                                <button className="perm-action-btn" onClick={() => setActiveTab('perm')}>查看详细策略 <i className="ri-arrow-right-line"></i></button>
+                            </div>
                         </div>
                     )}
-                    {activeTab === 'permission' && (
+
+                    {/* --- C. 权限明细 (独立 Tab) --- */}
+                    {activeTab === 'perm' && (
                         <div className="fade-in">
-                            <h3 className="content-title">权限看板</h3>
-                            <div style={{display:'flex', gap:'20px', marginBottom:'30px'}}>
-                                <div style={{flex:1, background:'#f0f7ff', padding:'20px', borderRadius:'8px', border:'1px solid #adc6ff'}}>
-                                    <div style={{color:'#1890ff', fontWeight:'700', marginBottom:'5px'}}>系统角色</div>
-                                    <div style={{fontSize:'13px'}}>高级管理员, 设备工程师</div>
+                            <h3 className="content-title">权限策略明细</h3>
+
+                            <div className="perm-detail-layout">
+                                <div className="detail-header-info">
+                                    <div className="info-block">
+                                        <div className="label">当前系统角色</div>
+                                        <div className="value big">{currentUser.roleName} ({currentUser.role})</div>
+                                    </div>
+                                    <div className="info-block">
+                                        <div className="label">策略版本 ID</div>
+                                        <div className="value mono">POL-2025-V4</div>
+                                    </div>
                                 </div>
-                                <div style={{flex:1, background:'#f6ffed', padding:'20px', borderRadius:'8px', border:'1px solid #b7eb8f'}}>
-                                    <div style={{color:'#52c41a', fontWeight:'700', marginBottom:'5px'}}>数据范围</div>
-                                    <div style={{fontSize:'13px'}}>全厂设备数据, 生产计划(只读)</div>
+
+                                <div className="perm-group">
+                                    <div className="pg-title"><i className="ri-database-2-line"></i> 数据访问范围</div>
+                                    <div className="pg-content">
+                                        <span className="p-tag green">当前部门数据: <strong>读写 (RW)</strong></span>
+                                        {(['ADM', 'MGR', 'QC'].includes(currentUser.role)) ?
+                                            <span className="p-tag orange">跨部门共享数据: <strong>只读 (RO)</strong></span> :
+                                            <span className="p-tag gray">跨部门共享数据: <strong>禁止 (Deny)</strong></span>
+                                        }
+                                        <span className="p-tag blue">公共基础数据: <strong>只读 (RO)</strong></span>
+                                    </div>
+                                </div>
+
+                                <div className="perm-group">
+                                    <div className="pg-title"><i className="ri-command-line"></i> 模块操作权限</div>
+                                    <div className="pg-content">
+                                        <span className="p-tag blue">通用查询/检索</span>
+                                        {['ADM', 'MGR', 'PE', 'QC'].includes(currentUser.role) && <span className="p-tag blue">报表数据导出</span>}
+                                        {['ADM', 'MGR'].includes(currentUser.role) && <span className="p-tag blue">单据电子审批</span>}
+                                        {['ADM'].includes(currentUser.role) && <span className="p-tag red">系统参数配置</span>}
+                                        {['OP'].includes(currentUser.role) && <span className="p-tag green">移动端报工填报</span>}
+                                    </div>
+                                </div>
+
+                                <div className="perm-group">
+                                    <div className="pg-title"><i className="ri-time-line"></i> 审计与合规</div>
+                                    <div className="pg-text">
+                                        <p>1. 您的所有<strong>“写入/修改/删除”</strong>操作将被记录在《系统操作日志》中，保留期限为 180 天。</p>
+                                        <p>2. 敏感数据（如配方、成本）的访问将触发额外的安全审计。</p>
+                                        <p style={{marginTop:'10px', color:'#999'}}>最近一次权限策略更新时间: 2026-01-01 12:00:00</p>
+                                    </div>
                                 </div>
                             </div>
-                            <h4 style={{marginBottom:'15px'}}>功能操作权限明细</h4>
-                            <div className="permission-tags">
-                                <span className="p-tag green">设备台账: <strong>读写</strong></span>
-                                <span className="p-tag green">维修工单: <strong>审批</strong></span>
-                                <span className="p-tag orange">备件采购: <strong>申请</strong></span>
-                                <span className="p-tag red">用户管理: <strong>禁止</strong></span>
-                            </div>
-                            <h4 style={{marginTop:'30px', marginBottom:'15px'}}>敏感操作审计日志</h4>
-                            <table className="simple-table">
-                                <thead><tr><th>时间</th><th>操作模块</th><th>动作</th><th>结果</th></tr></thead>
-                                <tbody>
-                                <tr><td>12-19 10:15</td><td>系统设置</td><td>修改密码策略</td><td>成功</td></tr>
-                                <tr><td>12-18 16:00</td><td>设备台账</td><td>删除记录 #9921</td><td>成功</td></tr>
-                                </tbody>
-                            </table>
                         </div>
                     )}
                 </div>
@@ -186,9 +237,9 @@ const ModalContent = ({ config, currentUser }) => {
         return (
             <div style={{maxWidth: '460px', margin: '40px auto'}}>
                 <h3 style={{marginBottom:'20px', textAlign:'center'}}>修改账户密码</h3>
-                <div className="aip-form-group"><label>当前密码</label><input type="password" class="aip-input" /></div>
-                <div className="aip-form-group"><label>新密码</label><input type="password" class="aip-input" /></div>
-                <div className="aip-form-group"><label>确认新密码</label><input type="password" class="aip-input" /></div>
+                <div className="aip-form-group"><label>当前密码</label><input type="password" className="aip-input" /></div>
+                <div className="aip-form-group"><label>新密码</label><input type="password" className="aip-input" /></div>
+                <div className="aip-form-group"><label>确认新密码</label><input type="password" className="aip-input" /></div>
                 <button className="btn btn-primary" style={{width:'100%', height:'42px', marginTop:'20px'}}>确认修改</button>
             </div>
         );
@@ -201,51 +252,17 @@ const ModalContent = ({ config, currentUser }) => {
                 <div className="settings-nav">
                     {[
                         {key:'preference', label:'偏好设置'},
-                        {key:'notification', label:'消息订阅'},
-                        {key:'developer', label:'开发者选项'}
+                        {key:'notification', label:'消息订阅'}
                     ].map(item => (
                         <div key={item.key} className={`settings-nav-item ${activeTab===item.key?'active':''}`} onClick={()=>setActiveTab(item.key)}>{item.label}</div>
                     ))}
                 </div>
                 <div className="settings-content">
-                    {activeTab === 'preference' && (
-                        <div className="fade-in">
-                            <h3 className="content-title">界面偏好设置</h3>
-                            <div className="aip-form-group"><label>默认语言</label><select className="aip-input"><option>简体中文</option><option>English</option></select></div>
-                            <div className="aip-form-group"><label>深色模式</label><select className="aip-input"><option>自动 (跟随系统)</option><option>始终开启</option><option>始终关闭</option></select></div>
-                            <div className="aip-form-group">
-                                <label>字体大小</label>
-                                <div style={{display:'flex', gap:'10px'}}>
-                                    <button className="small-btn outline">标准</button>
-                                    <button className="small-btn outline">中等</button>
-                                    <button className="small-btn outline">大</button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                    {activeTab === 'notification' && (
-                        <div className="fade-in">
-                            <h3 className="content-title">消息通知订阅</h3>
-                            <div className="list-item"><div><strong>设备故障告警</strong><div className="sub-text">机台停机、参数超限等紧急通知</div></div><span className="tag-active">已开启</span></div>
-                            <div className="list-item"><div><strong>流程审批任务</strong><div className="sub-text">待办事项、抄送我的单据</div></div><span className="tag-active">已开启</span></div>
-                            <div className="list-item"><div><strong>生产报表推送</strong><div className="sub-text">每日早班生产简报</div></div><span className="tag-inactive">已关闭</span></div>
-                        </div>
-                    )}
-                    {activeTab === 'developer' && (
-                        <div className="fade-in">
-                            <h3 className="content-title">开发者选项</h3>
-                            <div style={{padding:'15px', background:'#fff1f0', border:'1px dashed #ffccc7', borderRadius:'6px', marginBottom:'20px'}}>
-                                <div style={{color:'#cf1322', fontWeight:'bold', fontSize:'13px', marginBottom:'5px'}}>⚠️ 警告</div>
-                                <div style={{fontSize:'12px', color:'#666'}}>以下选项仅供开发人员调试使用，错误操作可能导致系统异常。</div>
-                            </div>
-                            <div className="aip-form-group"><label>API Endpoint</label><input className="aip-input" value="https://api.prod.sdzy.com/v1" disabled style={{background:'#eee', color:'#999'}}/></div>
-                            <div className="list-item"><div><strong>显示详细错误堆栈</strong></div><input type="checkbox" defaultChecked /></div>
-                            <div style={{marginTop:'30px', borderTop:'1px solid #eee', paddingTop:'20px'}}>
-                                <label style={{display:'block', marginBottom:'10px'}}>高级操作</label>
-                                <button className="small-btn outline" onClick={()=>alert('缓存已清除')}>清除本地缓存</button>
-                            </div>
-                        </div>
-                    )}
+                    <div className="fade-in">
+                        <h3 className="content-title">界面偏好设置</h3>
+                        <div className="aip-form-group"><label>默认语言</label><select className="aip-input"><option>简体中文</option></select></div>
+                        <div className="aip-form-group"><label>主题风格</label><select className="aip-input"><option>企业蓝 (默认)</option><option>暗夜黑</option></select></div>
+                    </div>
                 </div>
             </div>
         );
@@ -279,7 +296,7 @@ const Header = () => {
     return (
         <>
             <header className="header">
-                <div className="brand" onClick={() => navigate('主工作台')} style={{cursor: 'pointer'}}>
+                <div className="brand" onClick={() => navigate('待办门户')} style={{cursor: 'pointer'}}>
                     <div className="logo-container">
                         <img src={logoSvg} alt="Logo" style={{height: '36px', display: 'block'}} onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block'; }} />
                         <i className="ri-building-2-line fallback-logo" style={{display:'none', fontSize: '24px', color:'#1890FF'}}></i>
@@ -291,7 +308,7 @@ const Header = () => {
                 </div>
 
                 <div className="header-right" ref={headerRightRef}>
-                    <i className="ri-home-4-line icon-btn" title="工作台" onClick={() => navigate('主工作台')}></i>
+                    <i className="ri-home-4-line icon-btn" title="工作台" onClick={() => navigate('待办门户')}></i>
 
                     {/* 搜索 */}
                     <div style={{position:'relative'}}>
@@ -336,15 +353,15 @@ const Header = () => {
 
                     <i className="ri-robot-line icon-btn" title="AI助手" style={{ color: '#1890FF' }} onClick={() => toggleAIPanel()}></i>
 
-                    {/* 用户 - 显示 roleName */}
+                    {/* 用户 - 显示 部门+姓名 */}
                     <div className="user-profile" style={{position: 'relative', cursor: 'pointer'}} onClick={() => togglePanel('user')}>
                         <span className="avatar-circle">{currentUser.name[0]}</span>
                         <div style={{display:'flex', flexDirection:'column', justifyContent:'center'}}>
                             <span style={{ fontSize: '13px', lineHeight:'1.2' }}>{currentUser.name}</span>
-                            {/* 优先显示 roleName，如果没有则显示 code */}
                             <span style={{ fontSize: '10px', color: '#999', lineHeight:'1' }}>
-                    {currentUser.roleName ? currentUser.roleName.split('(')[0] : currentUser.role}
-                </span>
+                                {/* 优先显示 部门，如果没有则显示 role */}
+                                {currentUser.dept ? currentUser.dept : currentUser.roleName}
+                            </span>
                         </div>
                         <i className="ri-arrow-down-s-line" style={{marginLeft:'5px', color:'#999'}}></i>
 
