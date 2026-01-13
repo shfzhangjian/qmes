@@ -1,0 +1,32 @@
+/**
+ * @file: src/features/Planning/planning.css
+ */
+.planning-container { display: flex; flex-direction: column; height: 100%; overflow: hidden; }
+
+.gantt-container { display: flex; flex: 1; border: 1px solid var(--border-color); background: #fff; border-radius: 6px; overflow: hidden; min-height: 0; }
+.gantt-sidebar { width: 180px; border-right: 1px solid #eee; background: #fafafa; display: flex; flex-direction: column; }
+.gantt-main { flex: 1; overflow-x: auto; position: relative; display: flex; flex-direction: column; }
+
+.gantt-header-row { height: 40px; display: flex; border-bottom: 1px solid #eee; background: #fafafa; flex-shrink: 0; }
+.gantt-cell-head { flex: 0 0 40px; border-right: 1px solid #eee; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #666; }
+
+.gantt-body { flex: 1; overflow-y: auto; } /* 允许垂直滚动 */
+
+.gantt-row { height: 40px; display: flex; border-bottom: 1px solid #f0f0f0; position: relative; }
+.gantt-row:hover { background-color: #fafafa; }
+
+.gantt-cell { flex: 0 0 40px; border-right: 1px dashed #f5f5f5; height: 100%; transition: background 0.2s; }
+.gantt-cell:hover { background: #f0f7ff; }
+
+/* 任务滑块 */
+.task-block {
+    position: absolute; height: 26px; top: 7px; border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 12px; cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15); z-index: 2;
+    overflow: hidden; white-space: nowrap; text-overflow: ellipsis; padding: 0 4px;
+}
+.task-block:hover { filter: brightness(1.1); z-index: 3; }
+.task-block.conflict { background: var(--error-color); animation: shake 0.5s; }
+
+@keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-2px); } 75% { transform: translateX(2px); } }

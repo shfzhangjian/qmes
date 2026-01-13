@@ -19,12 +19,17 @@
     z-index: 100;
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     position: relative; /* 确保下拉菜单以此为基准 */
+    transition: padding-right 0.4s; /* 配合 AI 面板挤压 */
+}
+
+/* 配合 AI 面板的挤压效果 */
+body.aip-open .header {
+    padding-right: 470px;
 }
 
 .brand {
     display: flex; align-items: center; gap: 12px; cursor: pointer;
 }
-
 
 .brand-text-group {
     display: flex;
@@ -52,12 +57,17 @@
 
 .icon-btn {
     font-size: 20px; color: #666; cursor: pointer; transition: color 0.2s; position: relative;
+    display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 4px;
 }
-.icon-btn:hover, .icon-btn.active { color: #1890FF; }
+.icon-btn:hover, .icon-btn.active { color: #1890FF; background: rgba(0,0,0,0.02); }
 
 .user-profile {
     display: flex; align-items: center; gap: 10px; cursor: pointer;
     padding: 6px 12px; border-radius: 20px; background-color: #f0f2f5;
+    transition: background 0.2s;
+}
+.user-profile:hover {
+    background-color: #e6f7ff;
 }
 .avatar-circle {
     width: 28px; height: 28px; background: #1890FF; color: #fff;

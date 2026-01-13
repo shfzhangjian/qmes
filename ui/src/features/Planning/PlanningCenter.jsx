@@ -7,6 +7,7 @@
  */
 
 import React from 'react';
+import './planning.css';
 
 const PlanningCenter = () => {
    const days = Array.from({ length: 15 }, (_, i) => i + 1);

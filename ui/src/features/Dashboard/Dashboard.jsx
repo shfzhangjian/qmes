@@ -1,15 +1,18 @@
 /**
  * @file: src/features/Dashboard/Dashboard.jsx
- * @version: v2.3.0 (Cleaned)
- * @description: 禾臣新材料专属工作台 - 移除内嵌列表，链接至独立任务中心
- * @createDate: 2026-01-12
- * @lastModified: 2026-01-13
+ * @version: v2.5.0 (Layout Optimized)
+ * @description:
+ * 1. 优化布局：去除整体滚动条，改为卡片内滚动。
+ * 2. Banner 重构：更紧凑，合理利用空间展示快捷操作。
+ * 3. 按钮与跳转：优化“更多”按钮样式和点击区域。
+ * @lastModified: 2026-01-13 17:15:00
  */
 
 import React, { useContext } from 'react';
 import { AppContext } from '../../context/AppContext';
+import './dashboard.css';
 
-// --- 简版模拟数据 (仅用于 Dashboard 预览) ---
+// --- 简版模拟数据 ---
 const getDashboardTodos = () => {
     return [
         { tag: '审批', type: 'blue', text: 'HC-Film-T92 新产品试产方案审批', time: '09:00' },
@@ -19,7 +22,8 @@ const getDashboardTodos = () => {
         { tag: '会议', type: 'blue', text: 'MRB 委员会材料评审会议 (会议室3)', time: '14:30' },
         { tag: '培训', type: 'orange', text: '新入职操作工安全规范培训', time: '15:00' },
         { tag: '审核', type: 'blue', text: 'Q4 季度供应商绩效考核表审核', time: '16:00' },
-        { tag: '异常', type: 'red', text: '纯水系统电导率异常告警', time: '16:20' }
+        { tag: '异常', type: 'red', text: '纯水系统电导率异常告警', time: '16:20' },
+        { tag: '审批', type: 'blue', text: '年度设备采购预算预审', time: '17:00' }
     ];
 };
 
@@ -29,54 +33,36 @@ const Dashboard = () => {
     // 获取简版待办数据
     const simpleTodoList = getDashboardTodos();
 
-    // 根据禾臣新材料的业务场景定制角色视图
+    // 角色配置
     const getRoleConfig = (role) => {
         const configs = {
             'ADM': {
-                title: '数字化工厂全景概览',
                 stats: [
                     { label: '在线终端', value: '128', unit: '台' },
-                    { label: '接口 QPS', value: '450', unit: '次/秒' },
-                    { label: '数据湖存储', value: '8.2', unit: 'TB' }
+                    { label: '接口 QPS', value: '450', unit: '' },
+                    { label: '存储占用', value: '82', unit: '%' }
                 ],
-                shortcuts: ['系统配置', '权限管理', '审计日志', '数据字典']
+                shortcuts: [
+                    { label: '系统配置', icon: 'ri-settings-3-line', color: '#1890ff' },
+                    { label: '权限管理', icon: 'ri-shield-user-line', color: '#52c41a' },
+                    { label: '审计日志', icon: 'ri-file-list-3-line', color: '#faad14' },
+                    { label: '数据字典', icon: 'ri-book-2-line', color: '#722ed1' }
+                ]
             },
             'OP': {
-                title: 'No.3 精密涂布线工作台',
                 stats: [
-                    { label: '当前涂布速度', value: '45.2', unit: 'm/min', status: 'normal' },
-                    { label: '烘箱区温度', value: '120.5', unit: '°C', status: 'normal' },
-                    { label: '膜厚在线检测', value: '25.0±0.2', unit: 'µm', status: 'success' }
+                    { label: '涂布速度', value: '45.2', unit: 'm/m', status: 'normal' },
+                    { label: '烘箱温度', value: '120', unit: '°C', status: 'normal' },
+                    { label: '膜厚检测', value: '25.0', unit: 'µm', status: 'success' }
                 ],
-                shortcuts: ['投料扫描', '换卷记录', '首检录入', '异常停机', '粘度记录']
+                shortcuts: [
+                    { label: '投料扫描', icon: 'ri-barcode-box-line', color: '#1890ff' },
+                    { label: '换卷记录', icon: 'ri-refresh-line', color: '#52c41a' },
+                    { label: '异常报修', icon: 'ri-hammer-line', color: '#ff4d4f' },
+                    { label: '交接班', icon: 'ri-user-shared-line', color: '#722ed1' }
+                ]
             },
-            'EQ': {
-                title: '设备与能源监控中心',
-                stats: [
-                    { label: 'RTO 焚烧温', value: '850', unit: '°C', status: 'normal' },
-                    { label: '待处理工单', value: '2', unit: '个', status: 'warning' },
-                    { label: '备件库存预警', value: '3', unit: '项', status: 'error' }
-                ],
-                shortcuts: ['维修接单', '润滑保养', '备件领用', '分切刀模检查']
-            },
-            'MGR': {
-                title: '洁净车间驾驶舱 (Class 1000)',
-                stats: [
-                    { label: '光学膜直通率', value: '98.5%', unit: '', status: 'success' },
-                    { label: '溶剂回收率', value: '95.2%', unit: '', status: 'normal' },
-                    { label: 'CMP垫产量', value: '320', unit: '片', status: 'normal' }
-                ],
-                shortcuts: ['生产日报', '成本分析', '良率柏拉图', '环境监测(EMS)']
-            },
-            'QC': {
-                title: '实验室质检工作台',
-                stats: [
-                    { label: '待检批次', value: '5', unit: '批', status: 'warning' },
-                    { label: '光学雾度(Haze)', value: '0.8%', unit: '', status: 'normal' },
-                    { label: '剥离力测试', value: 'Pass', unit: '', status: 'success' }
-                ],
-                shortcuts: ['IQC来料', 'FQC终检', 'COA打印', '留样管理']
-            }
+            // ... 其他角色配置可按需扩展，默认使用 ADM 结构
         };
         return configs[role] || configs['ADM'];
     };
@@ -87,87 +73,157 @@ const Dashboard = () => {
         if (status === 'success') return '#52c41a';
         if (status === 'warning') return '#faad14';
         if (status === 'error') return '#ff4d4f';
-        return '#1890FF';
+        return '#1890FF'; // default
     };
 
     return (
-        <div className="dashboard-container" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <div className="dashboard-container" style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
 
-            {/* AI 晨报卡片 */}
-            <div className="aip-summary-card" style={{ flexShrink: 0 }}>
-                <div style={{ flex: 1 }}>
-                    <h2 style={{ margin: '0 0 10px 0', fontSize: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        早安，{currentUser?.name}
-                        <span className="tag" style={{ background: '#e6f7ff', color: '#1890ff', fontWeight: 'normal' }}>
-                            {currentUser?.role === 'OP' ? '早班' : '在岗'}
+            {/* --- 1. 紧凑型 Banner (Fixed Height) --- */}
+            <div className="aip-summary-card" style={{
+                flexShrink: 0,
+                padding: '16px 24px',
+                marginBottom: '15px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                background: '#fff',
+                borderRadius: '8px',
+                border: '1px solid #e8e8e8',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
+            }}>
+                {/* 左侧：问候与 AI 摘要 */}
+                <div style={{ flex: 1, paddingRight: '40px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                        <h2 style={{ margin: 0, fontSize: '18px', color: '#333' }}>
+                            早安，{currentUser?.name}
+                        </h2>
+                        <span className="tag" style={{ background: '#e6f7ff', color: '#1890ff', border: '1px solid #91caff' }}>
+                            {currentUser?.role === 'OP' ? '早班中' : '在线'}
                         </span>
-                    </h2>
-                    <p style={{ color: '#666', fontSize: '14px', lineHeight: '1.6' }}>
-                        {currentUser?.role === 'OP' ? (
-                            <>系统检测到 <strong>HC-OCA-2026 光学胶</strong> 批次即将生产。AI 建议重点关注 <strong>微凹辊涂布头</strong> 清洁度，防止产生晶点缺陷。</>
-                        ) : currentUser?.role === 'MGR' ? (
-                            <>昨日 <strong>CMP 抛光垫车间</strong> 产出创本月新高。今日重点关注 <strong>RTO 废气处理系统</strong> 的各塔压差波动。</>
-                        ) : (
-                            <>系统运行平稳。今日计划生产 <strong>32 批次</strong>，洁净室环境指标（温湿度/压差/尘埃粒子）均在管控范围内。</>
-                        )}
-                    </p>
-                    <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
-                        {conf.shortcuts.map(s => <button key={s} className="small-btn outline">{s}</button>)}
+                    </div>
+                    <div style={{ color: '#666', fontSize: '13px', display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
+                        <i className="ri-sparkling-fill" style={{ color: '#faad14', marginTop: '2px' }}></i>
+                        <span style={{ lineHeight: '1.5' }}>
+                            {currentUser?.role === 'OP' ?
+                                '系统检测到 HC-OCA-2026 批次即将生产，建议提前检查微凹辊清洁度。' :
+                                '昨日 CMP 车间产出创新高；今日 RTO 系统压差略有波动，请关注设备看板。'
+                            }
+                        </span>
                     </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-                    {conf.stats.map((stat, i) => (
-                        <div key={i} className="stat-box">
-                            <div style={{ fontSize: '12px', color: '#999', marginBottom: '4px' }}>{stat.label}</div>
-                            <div className="value" style={{ color: getStatusColor(stat.status) }}>
-                                {stat.value}<span style={{ fontSize: '12px', marginLeft: '2px', color: '#666' }}>{stat.unit}</span>
+                {/* 右侧：数据指标 (Stats) & 快捷入口 (Shortcuts) */}
+                <div style={{ display: 'flex', gap: '30px', alignItems: 'center' }}>
+                    {/* 快捷按钮组 */}
+                    <div style={{ display: 'flex', gap: '12px' }}>
+                        {conf.shortcuts.map((s, i) => (
+                            <div key={i} className="shortcut-item" style={{ textAlign: 'center', cursor: 'pointer', transition: '0.2s' }}>
+                                <div style={{
+                                    width: '36px', height: '36px', borderRadius: '8px',
+                                    background: `${s.color}15`, color: s.color,
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px',
+                                    marginBottom: '4px', margin: '0 auto'
+                                }}>
+                                    <i className={s.icon}></i>
+                                </div>
+                                <div style={{ fontSize: '11px', color: '#666' }}>{s.label}</div>
                             </div>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
+
+                    <div style={{ width: '1px', height: '40px', background: '#eee' }}></div>
+
+                    {/* 核心指标 */}
+                    <div style={{ display: 'flex', gap: '20px' }}>
+                        {conf.stats.map((stat, i) => (
+                            <div key={i} style={{ textAlign: 'center' }}>
+                                <div style={{ fontSize: '12px', color: '#999', marginBottom: '2px' }}>{stat.label}</div>
+                                <div style={{ fontSize: '18px', fontWeight: 'bold', color: getStatusColor(stat.status), fontFamily: 'active-digit' }}>
+                                    {stat.value} <span style={{ fontSize: '11px', color: '#999', fontWeight: 'normal' }}>{stat.unit}</span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </div>
 
-            <div className="dashboard-grid" style={{ flex: 1, minHeight: 0 }}>
+            {/* --- 2. 主工作区 Grid (Flex 1, No Scroll) --- */}
+            <div className="dashboard-grid" style={{
+                flex: 1,
+                minHeight: 0, // 关键：允许 flex 子项小于内容高度，从而触发内部滚动
+                display: 'grid',
+                gridTemplateColumns: '2fr 1fr',
+                gap: '15px',
+                overflow: 'hidden' // 防止 Grid 本身溢出
+            }}>
 
-                {/* 待办事项卡片 - 增加跳转 */}
-                <div className="dashboard-card" style={{ height: '100%' }}>
-                    <div className="card-header-sm" style={{ flexShrink: 0 }}>
-                        <span><i className="ri-list-check"></i> 待办事项 / 异常跟进</span>
-                        <span
-                            style={{ fontSize: '12px', color: '#1890FF', cursor: 'pointer', display:'flex', alignItems:'center', gap:'2px' }}
-                            onClick={() => navigate('我的任务')}
-                            title="跳转到流程中心-我的任务"
-                        >
-                            更多 <i className="ri-arrow-right-s-line"></i>
+                {/* A. 待办事项卡片 */}
+                <div className="dashboard-card" style={{ height: '100%', display: 'flex', flexDirection: 'column', border: '1px solid #e8e8e8', borderRadius: '8px', background: '#fff' }}>
+                    <div className="card-header-sm" style={{
+                        padding: '12px 16px', borderBottom: '1px solid #f0f0f0',
+                        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                        background: '#fafafa', flexShrink: 0
+                    }}>
+                        <span style={{ fontWeight: '600', fontSize: '14px', color: '#333' }}>
+                            <i className="ri-list-check" style={{ marginRight: '6px', color: '#1890ff', verticalAlign: 'middle' }}></i>
+                            待办事项 / 异常跟进
                         </span>
+
+                        {/* 优化后的“更多”按钮 */}
+                        <div
+                            onClick={() => navigate('/flow/todo')}
+                            style={{
+                                cursor: 'pointer', fontSize: '12px', color: '#666',
+                                display: 'flex', alignItems: 'center', padding: '4px 8px', borderRadius: '4px',
+                                transition: 'background 0.2s'
+                            }}
+                            className="hover-bg"
+                            title="前往任务中心处理更多任务"
+                        >
+                            更多任务 <i className="ri-arrow-right-s-line" style={{ marginLeft: '2px' }}></i>
+                        </div>
                     </div>
-                    <div style={{ flex: 1, overflowY: 'auto', padding: '0 10px' }}>
+
+                    {/* 列表区域 (内部滚动) */}
+                    <div style={{ flex: 1, overflowY: 'auto', padding: '0' }}>
                         {simpleTodoList.map((task, i) => (
-                            <div key={i} style={{ padding: '12px 0', borderBottom: '1px solid #f9f9f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div key={i} className="todo-item" style={{
+                                padding: '10px 16px', borderBottom: '1px solid #f9f9f9',
+                                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                                transition: 'background 0.2s', cursor: 'pointer'
+                            }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', overflow: 'hidden' }}>
                                     <span className="tag" style={{
                                         background: task.type === 'red' ? '#fff1f0' : task.type === 'orange' ? '#fff7e6' : '#e6f7ff',
                                         color: task.type === 'red' ? '#ff4d4f' : task.type === 'orange' ? '#faad14' : '#1890ff',
-                                        flexShrink: 0
+                                        border: `1px solid ${task.type === 'red' ? '#ffa39e' : task.type === 'orange' ? '#ffe58f' : '#91caff'}`,
+                                        fontSize: '11px', padding: '1px 5px', borderRadius: '3px', flexShrink: 0
                                     }}>
                                         {task.tag}
                                     </span>
-                                    <span style={{ fontSize: '13px', color: '#333', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '200px' }} title={task.text}>{task.text}</span>
+                                    <span style={{ fontSize: '13px', color: '#333', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                        {task.text}
+                                    </span>
                                 </div>
-                                <span style={{ fontSize: '12px', color: '#999', flexShrink: 0 }}>{task.time}</span>
+                                <span style={{ fontSize: '12px', color: '#999', flexShrink: 0, fontFamily: 'monospace' }}>
+                                    {task.time}
+                                </span>
                             </div>
                         ))}
                     </div>
                 </div>
 
-                {/* 生产趋势图 */}
-                <div className="dashboard-card" style={{ height: '100%' }}>
-                    <div className="card-header-sm" style={{ flexShrink: 0 }}>
-                        <span><i className="ri-bar-chart-fill"></i> 产能与良率趋势 (近5日)</span>
+                {/* B. 生产趋势图卡片 */}
+                <div className="dashboard-card" style={{ height: '100%', display: 'flex', flexDirection: 'column', border: '1px solid #e8e8e8', borderRadius: '8px', background: '#fff' }}>
+                    <div className="card-header-sm" style={{ padding: '12px 16px', borderBottom: '1px solid #f0f0f0', background: '#fafafa', flexShrink: 0 }}>
+                        <span style={{ fontWeight: '600', fontSize: '14px', color: '#333' }}>
+                            <i className="ri-bar-chart-box-line" style={{ marginRight: '6px', color: '#1890ff', verticalAlign: 'middle' }}></i>
+                            产能与良率趋势
+                        </span>
                     </div>
-                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '15px', overflow: 'hidden' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', height: '100%', paddingBottom: '10px' }}>
+                    <div style={{ flex: 1, padding: '20px', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                        <div style={{ flex: 1, display: 'flex', justifyContent: 'space-around', alignItems: 'flex-end', paddingBottom: '10px' }}>
                             {[
                                 { day: '周一', val: 65, rate: 98 },
                                 { day: '周二', val: 80, rate: 97 },
@@ -175,20 +231,38 @@ const Dashboard = () => {
                                 { day: '周四', val: 90, rate: 98 },
                                 { day: '今天', val: 75, rate: 98.5 }
                             ].map((d, i) => (
-                                <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', flex: 1 }}>
-                                    <div style={{ fontSize: '12px', color: '#1890ff', fontWeight: 'bold' }}>{d.rate}%</div>
-                                    <div style={{ width: '40%', background: 'linear-gradient(to top, #1890FF, #69c0ff)', height: `${d.val}%`, borderRadius: '4px 4px 0 0', opacity: 0.9 }}></div>
-                                    <div style={{ fontSize: '12px', color: '#999' }}>{d.day}</div>
+                                <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+                                    <div style={{ fontSize: '11px', color: '#1890ff', fontWeight: 'bold', marginBottom: '4px' }}>{d.rate}%</div>
+                                    <div style={{
+                                        width: '30%', minWidth: '16px', maxWidth: '30px',
+                                        background: 'linear-gradient(180deg, #69c0ff 0%, #1890FF 100%)',
+                                        height: `${d.val * 1.2}px`,
+                                        borderRadius: '4px 4px 0 0',
+                                        opacity: 0.9,
+                                        transition: 'height 0.5s'
+                                    }}></div>
+                                    <div style={{ fontSize: '11px', color: '#999', marginTop: '6px' }}>{d.day}</div>
                                 </div>
                             ))}
                         </div>
-                        <div style={{ textAlign: 'center', fontSize: '12px', color: '#999', marginTop: '5px', flexShrink: 0 }}>
-                            <span style={{ marginRight: '15px' }}><span style={{ display: 'inline-block', width: '8px', height: '8px', background: '#1890ff', borderRadius: '50%' }}></span> 涂布米数 (km)</span>
+                        <div style={{ textAlign: 'center', fontSize: '11px', color: '#ccc', paddingTop: '10px', borderTop: '1px dashed #eee' }}>
+                            <span>● 产量 (km)</span>
+                            <span style={{ margin: '0 10px' }}>|</span>
                             <span>良率 (Yield)</span>
                         </div>
                     </div>
                 </div>
+
             </div>
+
+            <style>{`
+                .shortcut-item:hover { transform: translateY(-2px); }
+                .hover-bg:hover { background: #f0f0f0; color: #1890ff !important; }
+                .todo-item:hover { background: #f0f7ff !important; }
+                /* 仅在 Webkit 浏览器隐藏滚动条但保留滚动功能 (可选) */
+                .dashboard-card .card-body::-webkit-scrollbar { width: 4px; }
+                .dashboard-card .card-body::-webkit-scrollbar-thumb { background: #eee; border-radius: 2px; }
+            `}</style>
         </div>
     );
 };
