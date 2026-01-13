@@ -7,6 +7,8 @@
 import React, { useContext, useState, useRef, useEffect } from 'react';
 import { AppContext } from '../../context/AppContext.jsx';
 import logoSvg from '../../assets/logo.jpg';
+import NotificationCenter from '../System/NotificationCenter.jsx'; // 复用组件
+import GlobalSearch from '../System/GlobalSearch.jsx'; // 复用组件
 import './Header.css';
 
 // --- 全屏模态框内容组件 ---
@@ -14,50 +16,6 @@ const ModalContent = ({ config, currentUser }) => {
     const { type } = config;
     const [activeTab, setActiveTab] = useState(type === 'settings' ? 'preference' : 'basic');
 
-    // 1. 消息通知中心 (保持不变)
-    if (type === 'messages') {
-        const messages = [
-            { type: 'error', title: '制丝线 2号烘丝机数据采集异常', time: '12-18 10:20', status: '未读', content: '传感器数据中断，持续时间超过 5 分钟，请立即检查网络连接及 PLC 状态。' },
-            { type: 'warning', title: '月度能耗指标即将超出预定阈值', time: '12-18 09:45', status: '未读', content: '当前电耗已达月度计划的 92%，预计将在 3 天后超标。' },
-            { type: 'success', title: '设备年度检修计划已审批通过', time: '12-17 16:30', status: '已读', content: '您的《2026年度 ZJ17 卷接机组检修计划》已由设备部经理审批通过。' },
-            { type: 'info', title: '系统版本更新公告 v3.0', time: '12-16 08:00', status: '已读', content: '系统将于本周五晚进行不停机更新，新增 AI 智能排程功能。' }
-        ];
-        return (
-            <div className="message-modal-content">
-                <h3 className="modal-section-title">消息通知中心</h3>
-                <div className="message-list">
-                    {messages.map((m, i) => (
-                        <div key={i} className={`message-full-item ${m.type}`}>
-                            <div className="msg-icon">
-                                <i className={`ri-${m.type === 'error' ? 'alert' : m.type === 'warning' ? 'alarm-warning' : m.type === 'success' ? 'checkbox-circle' : 'information'}-line`}></i>
-                            </div>
-                            <div className="msg-content">
-                                <div className="msg-header">
-                                    <span className="msg-title">{m.title}</span>
-                                    <span className={`msg-status ${m.status==='未读'?'unread':''}`}>{m.status}</span>
-                                </div>
-                                <div className="msg-body">{m.content}</div>
-                                <div className="msg-time">{m.time}</div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        );
-    }
-
-    // 2. 全域搜索 (保持不变)
-    if (type === 'search') {
-        return (
-            <div className="search-modal-content">
-                <div className="search-header-bar">
-                    <input className="aip-input large" defaultValue={config.query} placeholder="在此结果中二次检索..." />
-                    <button className="btn btn-primary">重新检索</button>
-                </div>
-                <div className="empty-search"><i className="ri-search-2-line"></i><p>未找到与 "{config.query}" 相关的结果</p></div>
-            </div>
-        );
-    }
 
     // 3. 个人中心
     if (type === 'personal') {
@@ -274,7 +232,6 @@ const ModalContent = ({ config, currentUser }) => {
 const Header = () => {
     const { currentUser, navigate, toggleAIPanel, logout, systemTitle, systemSubtitle } = useContext(AppContext);
     const [activePanel, setActivePanel] = useState(null);
-    const [searchQuery, setSearchQuery] = useState('');
     const [modalConfig, setModalConfig] = useState(null);
     const headerRightRef = useRef(null);
 
@@ -296,7 +253,8 @@ const Header = () => {
     return (
         <>
             <header className="header">
-                <div className="brand" onClick={() => navigate('待办门户')} style={{cursor: 'pointer'}}>
+                {/* Brand 保持不变 */}
+                <div className="brand" onClick={() => navigate('/dashboard')} style={{cursor: 'pointer'}}>
                     <div className="logo-container">
                         <img src={logoSvg} alt="Logo" style={{height: '36px', display: 'block'}} onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block'; }} />
                         <i className="ri-building-2-line fallback-logo" style={{display:'none', fontSize: '24px', color:'#1890FF'}}></i>
@@ -308,58 +266,41 @@ const Header = () => {
                 </div>
 
                 <div className="header-right" ref={headerRightRef}>
-                    <i className="ri-home-4-line icon-btn" title="工作台" onClick={() => navigate('待办门户')}></i>
+                    <i className="ri-home-4-line icon-btn" title="工作台" onClick={() => navigate('/dashboard')}></i>
 
-                    {/* 搜索 */}
+                    {/* 搜索 - Modal */}
                     <div style={{position:'relative'}}>
                         <i className={`ri-search-line icon-btn ${activePanel==='search'?'active':''}`} title="搜索" onClick={() => togglePanel('search')}></i>
                         {activePanel === 'search' && (
-                            <div className="header-dropdown panel-search">
-                                <div className="panel-body">
-                                    <div className="search-box-inner">
-                                        <i className="ri-search-line"></i>
-                                        <input autoFocus placeholder="输入关键词..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && openFullModal({type:'search', title:'全域搜索', query: searchQuery})} />
-                                    </div>
-                                    <div className="search-tags"><span>生产报表</span><span>OEE分析</span><span>备件</span></div>
-                                </div>
-                                <div className="panel-footer" onClick={() => openFullModal({type:'search', title:'全域搜索', query: searchQuery})}>查看全部搜索结果 <i className="ri-arrow-right-s-line"></i></div>
+                            <div className="header-dropdown panel-search" style={{width: '400px', height: '480px', display: 'flex', flexDirection: 'column', padding: 0, overflow:'hidden'}}>
+                                {/* 组件内部自带 Footer，Header 只有容器 */}
+                                <GlobalSearch mode="modal" />
                             </div>
                         )}
                     </div>
 
-                    {/* 通知 */}
+                    {/* 通知 - Modal */}
                     <div style={{position:'relative'}}>
                         <div className="icon-btn" onClick={() => togglePanel('notice')}>
                             <i className={`ri-notification-3-line ${activePanel==='notice'?'active':''}`}></i>
                             <span className="badge-dot"></span>
                         </div>
                         {activePanel === 'notice' && (
-                            <div className="header-dropdown panel-notice">
-                                <div className="panel-header"><span>通知 (3)</span><span className="clear-btn">清空</span></div>
-                                <div className="panel-body list">
-                                    <div className="notice-item unread">
-                                        <div className="icon-wrap error"><i className="ri-alert-line"></i></div>
-                                        <div className="info"><div className="title">制丝线 2号烘丝机异常</div><div className="time">10分钟前</div></div>
-                                    </div>
-                                    <div className="notice-item unread">
-                                        <div className="icon-wrap warning"><i className="ri-alarm-warning-line"></i></div>
-                                        <div className="info"><div className="title">能耗指标预警</div><div className="time">30分钟前</div></div>
-                                    </div>
-                                </div>
-                                <div className="panel-footer" onClick={() => openFullModal({type:'messages', title:'消息通知中心'})}>查看所有消息 <i className="ri-arrow-right-s-line"></i></div>
+                            <div className="header-dropdown panel-notice" style={{width: '360px', height: '480px', display: 'flex', flexDirection: 'column', padding: 0, overflow:'hidden'}}>
+                                {/* 组件内部自带 Footer */}
+                                <NotificationCenter mode="modal" />
                             </div>
                         )}
                     </div>
 
                     <i className="ri-robot-line icon-btn" title="AI助手" style={{ color: '#1890FF' }} onClick={() => toggleAIPanel()}></i>
 
-                    {/* 用户 - 显示 部门+姓名 */}
+                    {/* 用户 - Dropdown (保持不变) */}
                     <div className="user-profile" style={{position: 'relative', cursor: 'pointer'}} onClick={() => togglePanel('user')}>
                         <span className="avatar-circle">{currentUser.name[0]}</span>
                         <div style={{display:'flex', flexDirection:'column', justifyContent:'center'}}>
                             <span style={{ fontSize: '13px', lineHeight:'1.2' }}>{currentUser.name}</span>
                             <span style={{ fontSize: '10px', color: '#999', lineHeight:'1' }}>
-                                {/* 优先显示 部门，如果没有则显示 role */}
                                 {currentUser.dept ? currentUser.dept : currentUser.roleName}
                             </span>
                         </div>
@@ -369,7 +310,6 @@ const Header = () => {
                             <div className="header-dropdown panel-user" onClick={(e) => e.stopPropagation()}>
                                 <div className="dropdown-item" onClick={() => openFullModal({type:'personal', title:'个人中心'})}><i className="ri-user-settings-line"></i> 个人中心</div>
                                 <div className="dropdown-item" onClick={() => openFullModal({type:'password', title:'修改密码'})}><i className="ri-lock-password-line"></i> 修改密码</div>
-                                <div className="dropdown-item" onClick={() => openFullModal({type:'settings', title:'系统设置'})}><i className="ri-settings-3-line"></i> 系统设置</div>
                                 <div className="divider"></div>
                                 <div className="dropdown-item danger" onClick={() => logout()}><i className="ri-logout-box-line"></i> 退出登录</div>
                             </div>
@@ -378,7 +318,7 @@ const Header = () => {
                 </div>
             </header>
 
-            {/* 统一的全屏模态框 (AIP Overlay) */}
+            {/* AIP Overlay */}
             {modalConfig && (
                 <div className="aip-global-overlay open" onClick={() => setModalConfig(null)}>
                     <div className="aip-modal-container" onClick={e => e.stopPropagation()}>

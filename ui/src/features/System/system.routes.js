@@ -1,10 +1,19 @@
+/**
+ * @file: src/features/System/system.routes.js
+ * @description: 系统模块路由配置 - 注册全域搜索和消息中心
+ */
 import React from 'react';
+
+// 懒加载辅助函数
 const load = (loader) => React.lazy(loader);
 
 export default {
-    // 系统信息注册表 (通用列表组件)
-    '/system/info': load(() => import('./InfoSystemList.jsx')),
+    // 1. 全域搜索 (独立页面模式)
+    '/system/search': load(() => import('./GlobalSearch.jsx')),
 
-    // 你可以在这里继续添加系统模块的其他页面
-    // '/system/user': load(() => import('./UserList.jsx')),
+    // 2. 消息通知中心 (独立页面模式)
+    '/msg/list': load(() => import('./NotificationCenter.jsx')),
+
+    // 3. 原有的系统信息列表 (如果有的话)
+    '/system/info': load(() => import('./InfoSystemList.jsx')),
 };
