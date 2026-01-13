@@ -11,6 +11,7 @@ import MegaMenu from './features/Layout/MegaMenu.jsx';
 import AIAgent from './features/AIAgent/AIAgent.jsx';
 import Dashboard from './features/Dashboard/Dashboard.jsx';
 import PlanningCenter from './features/Planning/PlanningCenter.jsx';
+import TaskCenter from './features/TaskCenter/TaskCenter.jsx';
 import Login from './features/Auth/Login.jsx';
 import './styles/index.css';
 
@@ -44,9 +45,9 @@ const AppLayout = () => {
                         <i className="ri-home-line"></i> <span>/</span> {activePage}
                     </div>
 
-                    {/* 路由逻辑修正: 兼容旧名称和新名称 */}
-                    {(activePage === '主工作台' || activePage === '待办门户') ? <Dashboard /> :
-                        (activePage === '保养计划' || activePage === '计划排程') ? <PlanningCenter /> :
+                    {(activePage === '主工作台' || activePage === '待办门户' || activePage === 'Dashboard') ? <Dashboard /> :
+                        (activePage === '保养计划' || activePage === '计划排程' || activePage === 'PlanningCenter') ? <PlanningCenter /> :
+                            (activePage === '我的任务' || activePage === 'TaskCenter') ? <TaskCenter /> :
                             <div className="content-card">
                                 <div className="card-header-sm">
                                     <span>{activePage}</span>

@@ -329,3 +329,18 @@
 /* 通用淡入动画 */
 .fade-in { animation: fadeIn 0.3s; }
 @keyframes fadeIn { from{opacity:0; transform:translateY(5px)} to{opacity:1; transform:translateY(0)} }
+
+/* 4.7 全屏搜索结果 */
+.search-modal-content { max-width: 800px; margin: 0 auto; padding: 40px; }
+.search-header-bar { display: flex; gap: 10px; margin-bottom: 30px; }
+.empty-search { text-align: center; padding: 60px; color: #999; }
+.empty-search i { font-size: 48px; margin-bottom: 10px; display: block; opacity: 0.3; }
+.search-group { margin-bottom: 30px; }
+.group-title { font-size: 14px; color: #999; margin-bottom: 10px; padding-left: 5px; border-left: 3px solid #1890ff; }
+.search-result-row { display: flex; align-items: center; padding: 15px; background: #fff; border: 1px solid #eee; border-radius: 6px; margin-bottom: 10px; cursor: pointer; transition: 0.2s; }
+.search-result-row:hover { border-color: #1890ff; background: #f0f7ff; transform: translateX(5px); }
+.row-icon { font-size: 20px; color: #1890ff; margin-right: 15px; }
+.row-info { flex: 1; }
+.row-title { font-weight: 500; color: #333; }
+.row-path { font-size: 12px; color: #999; margin-top: 2px; }
+.arrow { color: #ccc; }

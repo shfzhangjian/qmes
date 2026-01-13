@@ -1,103 +1,73 @@
 /**
  * @file: src/context/AppContext.jsx
- * @version: v4.3.0 (Backend Driven Role)
- * @description: 登录逻辑优化，角色信息完全由后端 API 返回，不再由前端手动指定
+ * @version: v5.6.0 (Unified State Fix)
+ * @description: 统一状态管理，兼容旧版变量名，修复布局崩溃问题
  */
-
 import React, { createContext, useState, useEffect } from 'react';
 import { fetchMenuData, fetchUserInfo, loginAPI } from '../services/api.js';
 
 export const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
-  // --- 0. 全局配置 ---
-  const systemTitle = "禾臣新材料数字化智造协同一体化平台";
-  const systemSubtitle = "基于安徽学府智能化开发架构";
-
-  // --- 1. 核心认证状态 ---
+  // --- 状态定义 ---
   const [currentUser, setCurrentUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // --- 2. 界面与菜单状态 ---
+  // 导航状态
   const [activeMenu, setActiveMenu] = useState('dashboard');
+  const [activePage, setActivePage] = useState('Dashboard');
   const [isMegaMenuOpen, setMegaMenuOpen] = useState(false);
-  const [activePage, setActivePage] = useState('待办门户');
   const [isAIOpen, setAIOpen] = useState(false);
 
-  const [fullMenuData, setFullMenuData] = useState([]);
+  // 数据状态
   const [menuData, setMenuData] = useState([]);
-
-  // --- 3. 收藏夹状态 ---
   const [favorites, setFavorites] = useState(['待办任务', '我的消息']);
 
-  // --- 4. 核心：权限过滤算法 ---
+  // 全局配置
+  const systemTitle = "禾臣新材料数字化智造协同一体化平台";
+  const systemSubtitle = "基于安徽学府智能化开发架构";
+
+  // --- 权限过滤 ---
   const filterMenuByRole = (menus, roleCode) => {
     if (!menus) return [];
     if (!roleCode || roleCode === 'ADM') return menus;
 
-    const filterRecursive = (items) => {
-      return items.filter(item => {
-        if (item.items) {
-          const filteredItems = filterRecursive(item.items);
-          if (filteredItems.length > 0) {
-            item.items = filteredItems;
-            return true;
-          }
-          return false;
-        }
-        if (item.children) {
-          const filteredChildren = filterRecursive(item.children);
-          if (filteredChildren.length > 0) {
-            item.children = filteredChildren;
-            return true;
-          }
-          return false;
-        }
-        if (item.roles) {
-          return item.roles.includes(roleCode) || item.roles.includes('ALL');
-        }
-        return true;
-      });
-    };
-
     const menuCopy = JSON.parse(JSON.stringify(menus));
-    return menuCopy.filter(module => {
+    return menuCopy.map(module => {
+      if (module.roles && !module.roles.includes('ALL') && !module.roles.includes(roleCode)) return null;
+
       if (module.groups) {
-        module.groups = filterRecursive(module.groups);
-        if (module.groups.length === 0 && !module.path) return false;
+        module.groups = module.groups.map(group => {
+          if (group.items) {
+            group.items = group.items.filter(item =>
+                !item.roles || item.roles.includes('ALL') || item.roles.includes(roleCode)
+            );
+          }
+          return (group.items && group.items.length > 0) ? group : null;
+        }).filter(Boolean);
       }
-      // 顶级菜单权限检查
-      if (module.roles && !module.roles.includes('ADM') && !module.roles.includes('ALL') && !module.roles.includes(roleCode)) {
-        return false;
-      }
-      return true;
-    });
+
+      if ((!module.groups || module.groups.length === 0) && !module.path) return null;
+      return module;
+    }).filter(Boolean);
   };
 
-  // --- 5. 初始化 ---
+  // --- 初始化 ---
   useEffect(() => {
     const initApp = async () => {
       try {
-        console.log('[App] 初始化检查会话...');
         const user = await fetchUserInfo();
+        const menus = await fetchMenuData();
+
         setCurrentUser(user);
 
-        const menus = await fetchMenuData();
-        setFullMenuData(menus);
-
-        // 使用后端返回的 role 进行过滤
         if (user && user.role) {
-          const filtered = filterMenuByRole(menus, user.role);
-          setMenuData(filtered);
+          setMenuData(filterMenuByRole(menus, user.role));
           setIsAuthenticated(true);
-        } else {
-          setIsAuthenticated(false);
         }
       } catch (error) {
-        console.log('[App] 未登录或会话过期');
         setIsAuthenticated(false);
-        setCurrentUser(null);
       } finally {
         setIsLoading(false);
       }
@@ -105,81 +75,60 @@ export const AppProvider = ({ children }) => {
     initApp();
   }, []);
 
-  // --- 6. 核心动作 ---
-  // 更新：移除多余参数，仅需 username/password
-  const login = async (username, password) => {
-    try {
-      console.log('[App] 调用登录:', username);
-      const { user } = await loginAPI(username, password);
+  // --- 操作方法 ---
+  const login = async (u, p) => {
+    const { user } = await loginAPI(u, p);
+    const menus = await fetchMenuData();
 
-      // user 对象中已经包含了 role 和 roleName (由 api.js 提供)
-      setCurrentUser(user);
-
-      // 加载并过滤菜单
-      const menus = await fetchMenuData();
-      setFullMenuData(menus);
-      const filtered = filterMenuByRole(menus, user.role);
-      setMenuData(filtered);
-
-      // 重置首页
-      setActivePage('待办门户');
-      setActiveMenu('dashboard');
-
-      setIsAuthenticated(true);
-      return user;
-    } catch (error) {
-      console.error('[App] 登录失败:', error);
-      throw error;
-    }
+    setCurrentUser(user);
+    setMenuData(filterMenuByRole(menus, user.role));
+    setIsAuthenticated(true);
+    setActivePage('Dashboard');
+    return user;
   };
 
   const logout = () => {
-    localStorage.removeItem('tspm_token');
-    localStorage.removeItem('tspm_user');
-    setCurrentUser(null);
+    localStorage.clear();
     setIsAuthenticated(false);
-    setMegaMenuOpen(false);
-    setAIOpen(false);
-    setActivePage('待办门户');
+    setCurrentUser(null);
   };
 
   const navigate = (target) => {
-    const pageName = typeof target === 'string' ? target : target.label || target.title;
+    const pageName = typeof target === 'string' ? target : (target.label || target.title);
     setActivePage(pageName);
     setMegaMenuOpen(false);
   };
 
+  // 兼容性 Toggle 方法
+  const toggleMegaMenu = (val) => setMegaMenuOpen(prev => typeof val === 'boolean' ? val : !prev);
+  const toggleAIPanel = () => setAIOpen(prev => !prev);
   const toggleFavorite = (item) => {
-    const title = typeof item === 'string' ? item : item.label;
-    setFavorites(prev => {
-      if (prev.includes(title)) return prev.filter(t => t !== title);
-      return [...prev, title];
-    });
+    const name = typeof item === 'string' ? item : item.label;
+    setFavorites(prev => prev.includes(name) ? prev.filter(i => i!==name) : [...prev, name]);
   };
 
-  const toggleMegaMenu = (isOpen) => setMegaMenuOpen(isOpen);
-  const toggleAIPanel = (isOpen) => setAIOpen(prev => isOpen ?? !prev);
-  const setRole = (role) => setCurrentUser(prev => ({ ...prev, role }));
+  // --- Context Value (关键：兼容旧代码的所有命名) ---
+  const value = {
+    systemTitle, systemSubtitle,
+    currentUser, setCurrentUser,
+    isAuthenticated, loading: isLoading,
+    login, logout,
 
-  useEffect(() => {
-    if (isAIOpen) document.body.classList.add('aip-open');
-    else document.body.classList.remove('aip-open');
-  }, [isAIOpen]);
+    // 菜单状态 (兼容 activeModule 和 activeMenu)
+    activeMenu, setActiveMenu, activeModule: activeMenu,
 
-  return (
-      <AppContext.Provider value={{
-        systemTitle,
-        systemSubtitle,
-        isAuthenticated, login, logout,
-        currentUser, setCurrentUser, setRole, isLoading,
-        activeMenu, setActiveMenu,
-        isMegaMenuOpen, toggleMegaMenu,
-        activePage, navigate,
-        isAIOpen, toggleAIPanel,
-        menuData,
-        favorites, toggleFavorite
-      }}>
-        {children}
-      </AppContext.Provider>
-  );
+    // 页面状态
+    activePage, navigate,
+
+    // 侧滑菜单
+    isMegaMenuOpen, toggleMegaMenu,
+
+    // AI 面板 (兼容 isAIOpen 和 isAIPanelOpen)
+    isAIOpen, isAIPanelOpen: isAIOpen, toggleAIPanel,
+
+    // 数据
+    menuData, favorites, toggleFavorite
+  };
+
+  return <AppContext.Provider value={value}>{!isLoading && children}</AppContext.Provider>;
 };
