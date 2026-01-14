@@ -23,6 +23,7 @@ import ProductionEntryModal from './features/Simulation/ProductionEntryModal.jsx
 import TicketProcessModal from './features/Simulation/TicketProcessModal.jsx';
 
 import './styles/index.css';
+import './styles/components.css';
 
 // ... (ErrorBoundary & PageRenderer 保持不变) ...
 class ErrorBoundary extends React.Component {

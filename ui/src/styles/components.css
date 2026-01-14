@@ -1,0 +1,163 @@
+/**
+ * @file: src/styles/components.css
+ * @description: Q-UI 通用业务组件样式库
+ */
+
+/* --- 1. PageLayout (页面布局) --- */
+.q-page-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    gap: 15px;
+    overflow: hidden;
+}
+
+.q-search-panel {
+    background: #fff;
+    padding: 15px 20px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.q-body-panel {
+    flex: 1;
+    background: #fff;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0; /* 关键：允许 flex 子项收缩 */
+}
+
+.q-toolbar {
+    padding: 12px 20px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fafafa;
+}
+
+/* --- 2. QueryTable (查询表格) --- */
+.q-table-wrapper {
+    flex: 1;
+    overflow: auto;
+    position: relative;
+}
+
+.q-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.q-table thead th {
+    background: #fafafa;
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    color: #666;
+    border-bottom: 1px solid #eee;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    white-space: nowrap;
+}
+
+.q-table tbody td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f5f5f5;
+    color: #333;
+    transition: background 0.2s;
+}
+
+.q-table tbody tr:hover {
+    background: #f0f7ff;
+}
+
+/* 列锁定 (简单的 CSS 实现) */
+.q-table th.fixed-left, .q-table td.fixed-left {
+    position: sticky;
+    left: 0;
+    background: inherit; /* 继承父级背景，但在 hover 时可能有问题，通常需指定颜色 */
+    z-index: 11;
+    border-right: 1px solid #eee;
+}
+.q-table thead th.fixed-left { z-index: 20; background: #fafafa; }
+.q-table tbody tr:hover td.fixed-left { background: #f0f7ff; }
+.q-table tbody tr td.fixed-left { background: #fff; }
+
+.q-table th.fixed-right, .q-table td.fixed-right {
+    position: sticky;
+    right: 0;
+    background: inherit;
+    z-index: 11;
+    border-left: 1px solid #eee;
+}
+.q-table thead th.fixed-right { z-index: 20; background: #fafafa; }
+.q-table tbody tr:hover td.fixed-right { background: #f0f7ff; }
+.q-table tbody tr td.fixed-right { background: #fff; }
+
+.q-pagination {
+    padding: 10px 20px;
+    border-top: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff;
+}
+
+/* --- 3. SmartForm (智能表单) --- */
+.q-form-grid {
+    display: grid;
+    gap: 15px 20px;
+    /* 默认两列 */
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.q-form-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+.q-form-grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+.q-form-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.q-form-label {
+    font-size: 13px;
+    color: #666;
+    font-weight: 500;
+}
+.q-form-label.required::after {
+    content: '*'; color: #ff4d4f; margin-left: 4px;
+}
+
+/* --- 4. Tree (简单树) --- */
+.q-tree-node {
+    margin-left: 18px;
+    position: relative;
+}
+.q-tree-content {
+    display: flex;
+    align-items: center;
+    padding: 6px 8px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: 0.2s;
+}
+.q-tree-content:hover { background: #f5f5f5; }
+.q-tree-content.selected { background: #e6f7ff; color: #1890ff; }
+.q-tree-arrow { width: 16px; display: inline-block; cursor: pointer; color: #999; }
+.q-tree-arrow.expanded { transform: rotate(90deg); }
+
+/* --- 通用工具类 --- */
+.q-tag {
+    display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px;
+}
+.q-tag.success { background: #f6ffed; border: 1px solid #b7eb8f; color: #52c41a; }
+.q-tag.processing { background: #e6f7ff; border: 1px solid #91caff; color: #1890ff; }
+.q-tag.error { background: #fff2f0; border: 1px solid #ffccc7; color: #ff4d4f; }
+.q-tag.warning { background: #fffbe6; border: 1px solid #ffe58f; color: #faad14; }
