@@ -10,4 +10,5 @@ export default {
 
     // 如果你有不合格品处置单
     '/qms/ncr/list': load(() => import('./NonConformingList.jsx')),
+
 };
