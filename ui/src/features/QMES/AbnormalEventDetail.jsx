@@ -24,15 +24,67 @@ const Cell = ({ children, span = 1, className = '', style = {}, title, vertical,
 
 const Label = ({ children }) => <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>{children}</div>;
 
+// =============================================================================
+// [Updated Component] Input 组件 v2.0
+// 修改历史:
+// - 2026-01-14 14:00:00 [Fix] 修复只读模式下 type="date" 显示占位符问题。
+// - 2026-01-14 14:50:00 [Upgrade]
+//   1. 增加对 type="datetime-local" 的支持，解决"确认时间"显示 yyyy/mm/dd 的问题。
+//   2. 增加 formatDisplayValue 函数，去除 datetime-local 中间的 'T'。
+//   3. 添加 onKeyDown 拦截，实现"日期不要填写，只能通过选择组件设置"。
+// =============================================================================
 const Input = ({ value, onChange, align = 'left', placeholder, type = 'text', section, suggestions, isEditing, canEdit, style, forceReadOnly, underline }) => {
-    const sectionEditable = !section || canEdit(section);
+    // 1. 权限与编辑态判断
+    const sectionEditable = !section || (canEdit && canEdit(section));
     const editable = !forceReadOnly && isEditing && sectionEditable;
+
+    // 2. 样式计算
     let finalStyle = { textAlign: align, ...style };
     let className = `aed-input ${!editable ? 'readonly' : 'editable-field'}`;
-    if (underline) { finalStyle = { ...finalStyle, border: 'none', borderBottom: '1px solid #000', borderRadius: 0, backgroundColor: 'transparent', padding: '0 4px' }; }
-    else if (editable) { finalStyle = { ...finalStyle, backgroundColor: '#fff', border: '1px solid #d9d9d9', borderRadius: '2px', padding: '4px' }; }
-    else { finalStyle = { ...finalStyle, padding: '4px' }; }
-    return <input type={type} className={className} style={finalStyle} value={value || ''} onChange={e => editable && onChange && onChange(e.target.value)} readOnly={!editable} placeholder={editable ? placeholder : ''} />;
+
+    if (underline) {
+        finalStyle = { ...finalStyle, border: 'none', borderBottom: '1px solid #000', borderRadius: 0, backgroundColor: 'transparent', padding: '0 4px' };
+    } else if (editable) {
+        finalStyle = { ...finalStyle, backgroundColor: '#fff', border: '1px solid #d9d9d9', borderRadius: '2px', padding: '4px' };
+    } else {
+        finalStyle = { ...finalStyle, padding: '4px' };
+    }
+
+    // 3. [关键修复] 日期/时间控件特殊处理
+    const isDateControl = type === 'date' || type === 'datetime-local';
+
+    // 如果是日期类控件，且处于只读模式，强制转为 text 以隐藏浏览器默认的 yyyy/mm/dd 占位符
+    const renderType = (isDateControl && !editable) ? 'text' : type;
+
+    // 优化显示值：如果是 datetime-local 转 text，把中间的 'T' 换成空格，看起来更像人类语言
+    let displayValue = value || '';
+    if (renderType === 'text' && type === 'datetime-local' && displayValue.includes('T')) {
+        displayValue = displayValue.replace('T', ' ');
+    }
+
+    return (
+        <input
+            type={renderType}
+            className={className}
+            style={finalStyle}
+            value={displayValue}
+            onChange={e => editable && onChange && onChange(e.target.value)}
+            readOnly={!editable}
+            placeholder={editable ? placeholder : ''}
+            // [新增] 禁止在日期控件中手动输入，强制只能用鼠标点击选择
+            onKeyDown={(e) => {
+                if (editable && isDateControl) {
+                    e.preventDefault();
+                }
+            }}
+            // [新增] 点击输入框直接弹出日期选择器 (提升体验)
+            onClick={(e) => {
+                if (editable && isDateControl && e.target.showPicker) {
+                    e.target.showPicker();
+                }
+            }}
+        />
+    );
 };
 
 const Select = ({ value, onChange, options, section, isEditing, canEdit }) => {
