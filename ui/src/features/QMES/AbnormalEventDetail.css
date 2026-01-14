@@ -192,3 +192,61 @@
     background-color: #fafafa; transition: border-color 0.2s;
 }
 .aed-file-card:hover { border-color: #1890ff; }
+
+/* 新增：关联单据的链接按钮样式 */
+.aed-link-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 2px 8px;
+    background-color: #e6f7ff;
+    border: 1px solid #91d5ff;
+    color: #1890ff;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.aed-link-btn:hover {
+    background-color: #bae7ff;
+    text-decoration: underline;
+}
+
+.aed-duration-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    margin-left: 10px; padding: 4px 12px;
+    background: linear-gradient(135deg, #fffbe6 0%, #fff7e6 100%);
+    border: 1px solid #ffe58f;
+    border-radius: 20px; /* 胶囊形状 */
+    color: #faad14; font-size: 12px; font-weight: 600;
+    box-shadow: 0 2px 4px rgba(250, 173, 20, 0.1);
+    cursor: help; transition: all 0.2s;
+    user-select: none;
+}
+
+
+/* 耗时图标呼吸动画 */
+.aed-duration-tag i {
+    font-size: 14px;
+    animation: timePulse 2s infinite ease-in-out;
+}
+
+/* 新增：顶部 Toolbar 的关联标签 */
+.aed-related-tag {
+    background: #f6ffed;
+    border: 1px solid #b7eb8f;
+    color: #52c41a;
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 4px;
+}
+
+.aed-footer-note {
+    font-size: 12px;
+    color: #666;
+    min-height: 24px !important;
+    /* 确保继承 .aed-cell 的边框：border-right, border-bottom */
+    /* 如果需要去掉内部竖线，可以设置 gridColumn span 7 保持整体 */
+}
