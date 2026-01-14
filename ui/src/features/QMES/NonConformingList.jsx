@@ -1,219 +1,158 @@
 /**
  * @file: src/features/QMES/NonConformingList.jsx
- * @version: v2.1.0
- * @description: 不合格品处置单管理 (HC/R-23-1-01)
- * - [UI Fix] 2026-01-14: 优化表格外框样式，实现全封闭 2px 边框包裹。
- * - [Feature] 2026-01-14: 增加关联单据结案状态检查。当状态为 'closed' 且 isRelated='是' 时，底部显示关联结案链接，点击可弹出关联详情。
- * @author: AI Copilot
- * @lastModified: 2026-01-14 12:45:00
+ * @version: v8.0.0 (Mock Data for Full Workflow)
+ * @description: 不合格品处置列表 - 包含覆盖全流程的模拟数据
  */
 import React, { useState } from 'react';
 import PageLayout from '../../components/Common/PageLayout';
 import QueryTable from '../../components/Common/QueryTable';
-import BaseModal from '../../components/Common/BaseModal';
 import SmartForm from '../../components/Common/SmartForm';
+import NonConformingDetail from './NonConformingDetail';
 
 const NonConformingList = () => {
-    const [modalVisible, setModalVisible] = useState(false);
-    const [relatedModalVisible, setRelatedModalVisible] = useState(false); // 关联单据弹窗状态
-    const [currentRecord, setCurrentRecord] = useState({});
+    // --- 状态管理 ---
+    const [queryParams, setQueryParams] = useState({ keyword: '', status: '' });
+    const [detailVisible, setDetailVisible] = useState(false);
+    const [currentRecord, setCurrentRecord] = useState(null);
+    const [isEditing, setIsEditing] = useState(false);
 
-    // --- 模拟数据 (Update: 增加关联结案场景) ---
-    const mockData = [
-        { id: 'NCR-2026-055', name: 'HC-OCA-50u', qty: '500m', step: '涂布', reason: '晶点超标', status: 'reviewing', isRelated: '否' },
-        { id: 'NCR-2026-056', name: 'PET基膜', qty: '20卷', step: 'IQC', reason: '厚度不均', status: 'closed', isRelated: '是', relatedId: 'ABN-2026-009' },
-    ];
+    // --- 模拟数据 (覆盖全流程状态) ---
+    const [dataList, setDataList] = useState([
+        {
+            id: 'NCR-2026-001', date: '2026-01-14', name: 'PET基膜', qty: '20卷', step: 'IQC',
+            type: '原材料', status: 'DRAFT', desc: '厚度不均，CPK < 1.0',
+            creator: '张三'
+        },
+        {
+            id: 'NCR-2026-002', date: '2026-01-13', name: 'HC-OCA-50u', qty: '500m', step: '涂布',
+            type: '半成品', status: 'PENDING_HEAD', desc: '表面检测仪报晶点超标',
+            finder: '李四', createTime: '2026-01-13 10:00'
+        },
+        {
+            id: 'NCR-2026-003', date: '2026-01-12', name: '离型膜', qty: '1000m', step: '分切',
+            type: '半成品', status: 'PENDING_QA', desc: '端面不齐',
+            confirmer: '王经理', confirmDate: '2026-01-12 14:00'
+        },
+        {
+            id: 'NCR-2026-004', date: '2026-01-11', name: '保护膜', qty: '50卷', step: '包装',
+            type: '成品', status: 'PENDING_REVIEW', desc: '标签打印错误',
+            level: '一般', respDept: ['生产部', '品质部'], // 多部门会签中
+            qaPerson: '赵QA', qaDate: '2026-01-11 16:00'
+        },
+        {
+            id: 'NCR-2026-005', date: '2026-01-10', name: '光学胶', qty: '200kg', step: '配料',
+            type: '原材料', status: 'PENDING_FINAL', desc: '粘度异常',
+            level: '严重', respDept: ['研发部', '工艺部'],
+            rdResult: '报废', rdComment: '配方比例错误，无法修复', rdSign: '钱研发',
+            peResult: '报废', peComment: '同意研发意见', peSign: '孙工艺'
+        },
+        {
+            id: 'NCR-2026-006', date: '2026-01-09', name: 'UV胶水', qty: '10kg', step: 'IQC',
+            type: '原材料', status: 'CLOSED', desc: '过期',
+            finalResult: '报废', finalConclusion: '批准报废，扣除供应商货款。', finalSign: '周总'
+        }
+    ]);
 
-    const columns = [
-        { title: '单号', dataIndex: 'id', width: 120, fixed: 'left' },
-        { title: '品名', dataIndex: 'name', width: 120 },
-        { title: '发生工序', dataIndex: 'step', width: 80 },
-        { title: '不合格数量', dataIndex: 'qty', width: 100 },
-        { title: '不良描述', dataIndex: 'reason', width: 200 },
-        { title: '状态', dataIndex: 'status', width: 100, render: v => v === 'closed' ? <span className="q-tag success">已结单</span> : <span className="q-tag processing">会签中</span> },
-        { title: '关联产品', dataIndex: 'isRelated', width: 80, render: v => v === '是' ? <span style={{color:'#faad14', fontWeight:'bold'}}>是</span> : '否' },
-        { title: '操作', key: 'op', fixed: 'right', width: 100, render: (_, r) => <button className="small-btn outline" onClick={() => handleEdit(r)} style={{ color: '#1890ff' }}>{r.status==='closed'?'查看':'评审'}</button> }
-    ];
-
-    const handleEdit = (r) => {
-        setCurrentRecord(r || {});
-        setModalVisible(true);
+    // --- 状态配置 ---
+    const getStatusConfig = (status) => {
+        const map = {
+            'DRAFT': { t: '草稿', c: '#999', action: '编辑' },
+            'PENDING_HEAD': { t: '待部门确认', c: '#faad14', action: '去确认' },
+            'PENDING_QA': { t: '待品质确认', c: '#13c2c2', action: '去分发' },
+            'PENDING_REVIEW': { t: '会签中', c: '#722ed1', action: '去评审' },
+            'PENDING_FINAL': { t: '待最终结论', c: '#eb2f96', action: '去结案' },
+            'CLOSED': { t: '已结案', c: '#52c41a', action: '查看' }
+        };
+        return map[status] || { t: status, c: '#333', action: '查看' };
     };
 
-    // --- PDF 样式辅助组件 ---
-    const Cell = ({ children, span = 1, className = '', style = {} }) => (
-        <div className={`pdf-cell ${className}`} style={{ gridColumn: `span ${span}`, ...style }}>
-            {children}
-        </div>
-    );
-    const Input = ({ value }) => <input type="text" className="pdf-input" defaultValue={value} />;
-    const CheckBox = ({ label }) => <label style={{marginRight:'8px'}}><input type="checkbox"/> {label}</label>;
+    const handleOpenDetail = (record, editMode) => {
+        const initData = record || {
+            id: `NCR-2026-${Math.floor(Math.random() * 1000)}`,
+            status: 'DRAFT',
+            date: new Date().toISOString().split('T')[0],
+            qty: '',
+            step: ''
+        };
+        setCurrentRecord(initData);
+        setIsEditing(editMode);
+        setDetailVisible(true);
+    };
+
+    const handleSubmit = (newData, msg) => {
+        setDataList(prev => {
+            const exists = prev.find(p => p.id === newData.id);
+            if(exists) return prev.map(p => p.id === newData.id ? newData : p);
+            return [newData, ...prev];
+        });
+        // 不关闭弹窗，模拟连续操作，或者刷新列表
+        alert(msg || '保存成功');
+        setDetailVisible(false);
+    };
+
+    const columns = [
+        { title: '单据编号', dataIndex: 'id', width: 140, fixed: 'left' },
+        { title: '发生日期', dataIndex: 'date', width: 120 },
+        { title: '品名', dataIndex: 'name', width: 120 },
+        { title: '类型', dataIndex: 'type', width: 80 },
+        { title: '工序', dataIndex: 'step', width: 80 },
+        { title: '数量', dataIndex: 'qty', width: 80 },
+        {
+            title: '状态', dataIndex: 'status', width: 120,
+            render: v => {
+                const conf = getStatusConfig(v);
+                return <span style={{ color: conf.c, background: `${conf.c}15`, padding: '2px 8px', borderRadius: '4px', fontSize: '12px', border: `1px solid ${conf.c}30` }}>{conf.t}</span>;
+            }
+        },
+        {
+            title: '操作', key: 'op', fixed: 'right', width: 140,
+            render: (_, r) => {
+                const conf = getStatusConfig(r.status);
+                return (
+                    <div style={{display:'flex', gap:'8px'}}>
+                        <button className="small-btn outline" onClick={() => handleOpenDetail(r, false)}>查看</button>
+                        {r.status !== 'CLOSED' && (
+                            <button className="small-btn outline" style={{color:'#1890ff', borderColor:'#1890ff'}} onClick={() => handleOpenDetail(r, true)}>
+                                {conf.action}
+                            </button>
+                        )}
+                    </div>
+                );
+            }
+        }
+    ];
+
+    const filteredData = dataList.filter(item => !queryParams.keyword || item.id.includes(queryParams.keyword) || item.name.includes(queryParams.keyword));
 
     return (
         <PageLayout
             searchForm={
                 <SmartForm
-                    fields={[{ label: '单据编号', name: 'id' }, { label: '品名', name: 'name' }]}
+                    fields={[
+                        { label: '关键词', name: 'keyword', placeholder: '单号/品名' },
+                        { label: '状态', name: 'status', type: 'select', options: Object.keys(getStatusConfig('')).map(k=>({value:k, label:getStatusConfig(k).t})) }
+                    ]}
+                    data={queryParams}
+                    onChange={(k, v) => setQueryParams({ ...queryParams, [k]: v })}
                     columns={4}
                 />
             }
-            toolbar={<button className="btn btn-primary" onClick={() => handleEdit({})}><i className="ri-add-line"></i> 开具处置单</button>}
+            toolbar={
+                <>
+                    <div style={{fontWeight:'bold', fontSize:'16px'}}>不合格品处置列表 (HC/R-23-1-01)</div>
+                    <button className="btn btn-primary" onClick={() => handleOpenDetail(null, true)}><i className="ri-add-line"></i> 开具处置单</button>
+                </>
+            }
         >
-            <QueryTable columns={columns} dataSource={mockData} pagination={{ total: 2, current: 1, pageSize: 10 }} onPageChange={() => { }} />
+            <QueryTable columns={columns} dataSource={filteredData} pagination={{total: filteredData.length, current:1}} onPageChange={()=>{}} />
 
-            {/* 主要处置单弹窗 */}
-            <BaseModal visible={modalVisible} title="不合格品处置单" width="950px" onClose={() => setModalVisible(false)} onOk={() => setModalVisible(false)}>
-                <div className="pdf-container">
-                    <div style={{ textAlign: 'center', position: 'relative', marginBottom: '15px' }}>
-                        <div style={{ fontSize: '24px', fontWeight: 'bold', letterSpacing: '2px' }}>不合格品处置单</div>
-                        <div style={{ position: 'absolute', right: 0, top: 0, fontSize: '12px', textAlign: 'left' }}>
-                            <div>编号: <span style={{ textDecoration: 'underline' }}>{currentRecord.id || 'HC/R-23-1-01'}</span></div>
-                            <div>版本版次号: A4</div>
-                        </div>
-                    </div>
-
-                    <div className="pdf-grid-ncr">
-                        {/* 1. 基础信息 */}
-                        <Cell className="bg-gray center v-center">类型</Cell>
-                        <Cell className="v-center"><CheckBox label="半成品" /> <CheckBox label="成品" /></Cell>
-                        <Cell className="bg-gray center v-center">发生日期</Cell>
-                        <Cell><Input /></Cell>
-                        <Cell className="bg-gray center v-center">品名</Cell>
-                        <Cell><Input value={currentRecord.name}/></Cell>
-                        <Cell className="bg-gray center v-center">数量</Cell>
-                        <Cell><Input value={currentRecord.qty}/></Cell>
-
-                        <Cell className="bg-gray center v-center">发生工序</Cell>
-                        <Cell><Input value={currentRecord.step}/></Cell>
-                        <Cell className="bg-gray center v-center">规格</Cell>
-                        <Cell><Input /></Cell>
-                        <Cell className="bg-gray center v-center">批号</Cell>
-                        <Cell span={3}><Input /></Cell>
-
-                        <Cell className="bg-gray center v-center" style={{ writingMode: 'vertical-rl' }}>不合格说明</Cell>
-                        <Cell span={7} className="no-padding">
-                            <div style={{height:'100%', display:'flex', flexDirection:'column'}}>
-                                <div style={{flex:1, borderBottom:'1px solid #000', padding:'5px'}}>
-                                    <div style={{fontWeight:'bold'}}>不良描述:</div>
-                                    <textarea className="pdf-input" rows={3} defaultValue={currentRecord.reason}></textarea>
-                                </div>
-                                <div style={{padding:'5px', display:'flex', alignItems:'center'}}>
-                                    <span style={{fontWeight:'bold', marginRight:'10px'}}>品质确认:</span>
-                                    <span style={{marginRight:'20px'}}>担当: <input style={{width:'80px', borderBottom:'1px solid #000', borderTop:'none',borderLeft:'none',borderRight:'none'}}/></span>
-                                </div>
-                            </div>
-                        </Cell>
-
-                        {/* ... 等级与责任单位 (省略重复代码以聚焦核心修改) ... */}
-                        <Cell className="bg-gray center v-center">不合格等级</Cell>
-                        <Cell span={7} className="v-center"><CheckBox label="轻微" /> <CheckBox label="一般" /> <CheckBox label="严重" /></Cell>
-                        <Cell className="bg-gray center v-center">责任单位</Cell>
-                        <Cell span={7} className="v-center"><CheckBox label="生产部" /> <CheckBox label="品质部" /></Cell>
-
-                        {/* ... 评审会签区域 (保持原样) ... */}
-                        <Cell className="bg-gray center v-center" style={{gridRow:'span 5', writingMode: 'vertical-rl', letterSpacing:'5px'}}>评审会签</Cell>
-                        <Cell className="bg-gray center">部门</Cell>
-                        <Cell className="bg-gray center" span={3}>意见 (勾选)</Cell>
-                        <Cell className="bg-gray center" span={3}>签字 / 日期</Cell>
-
-                        {/* 示例：研发部 */}
-                        <Cell className="center v-center">研发部</Cell>
-                        <Cell span={3} className="v-center justify-around"><CheckBox label="返工" /> <CheckBox label="报废" /></Cell>
-                        <Cell span={3} className="center v-center hand-write">Jim / 1.14</Cell>
-                        {/* (省略其他部门行...) */}
-                        <Cell className="center v-center">生产部</Cell>
-                        <Cell span={3} className="v-center justify-around"><CheckBox label="返工" /></Cell>
-                        <Cell span={3} className="center v-center"></Cell>
-                        <Cell className="center v-center">品质部</Cell>
-                        <Cell span={3} className="v-center justify-around"><CheckBox label="返工" /></Cell>
-                        <Cell span={3} className="center v-center"></Cell>
-                        <Cell className="center v-center">工艺部</Cell>
-                        <Cell span={3} className="v-center justify-around"><CheckBox label="返工" /></Cell>
-                        <Cell span={3} className="center v-center"></Cell>
-
-                        {/* --- 最终结论与关联结案 --- */}
-                        <Cell className="bg-gray center v-center" style={{gridRow:'span 2', writingMode: 'vertical-rl'}}>最终结论</Cell>
-                        <Cell className="center v-center">总监/总经理</Cell>
-                        <Cell span={3} className="v-center justify-around"><CheckBox label="报废" /> <CheckBox label="特采" /></Cell>
-                        <Cell span={3} className="center v-center text-gray">签字 / 日期</Cell>
-
-                        {/* [New Feature] 关联单据状态显示区 */}
-                        {currentRecord.status === 'closed' && currentRecord.isRelated === '是' && (
-                            <>
-                                <Cell className="center v-center bg-gray" style={{fontWeight:'bold', color:'#1890ff'}}>关联结案</Cell>
-                                <Cell span={6} className="v-center" style={{justifyContent:'space-between', padding:'0 20px'}}>
-                                    <span>
-                                        <i className="ri-link-m"></i> 关联异常单:
-                                        <b style={{marginLeft:'5px'}}>{currentRecord.relatedId}</b>
-                                    </span>
-                                    <span className="q-tag success">已同步结案</span>
-                                    <button
-                                        className="small-btn outline"
-                                        onClick={() => setRelatedModalVisible(true)}
-                                        style={{cursor:'pointer', border:'1px solid #1890ff', color:'#1890ff', padding:'2px 8px', borderRadius:'4px'}}
-                                    >
-                                        查看详情 <i className="ri-external-link-line"></i>
-                                    </button>
-                                </Cell>
-                            </>
-                        )}
-                        {/* 如果未结案或不关联，用空行填充保持表格完整性 (Optional) */}
-                        {!(currentRecord.status === 'closed' && currentRecord.isRelated === '是') && (
-                            <>
-                                <Cell className="center v-center">备注</Cell>
-                                <Cell span={6}></Cell>
-                            </>
-                        )}
-                    </div>
-
-                    <div style={{display:'flex', justifyContent:'space-between', fontSize:'12px', marginTop:'10px'}}>
-                        <div>注: 关联单据需同步结案</div>
-                        <div>保管期限: 10年</div>
-                    </div>
-                </div>
-
-                <style>{`
-                    .pdf-container { font-family: "SimSun", serif; color: #000; padding: 10px; }
-                    .pdf-grid-ncr {
-                        display: grid;
-                        grid-template-columns: 40px 80px 1fr 80px 1fr 80px 1fr 1fr;
-                        /* [Fix] 外框全包裹: 使用 border 代替原来的 top/left border */
-                        border: 2px solid #000;
-                        /* 防止内部边框重叠，可略微调整 gap 或 margin，这里使用负 margin 技术或依赖 collapse */
-                    }
-                    .pdf-cell {
-                        border-right: 1px solid #000;
-                        border-bottom: 1px solid #000;
-                        padding: 4px; font-size: 13px; background: #fff;
-                    }
-                    /* [Fix] 移除最右侧和最底部的边框，依靠容器的 2px 边框 (Visual Trick) */
-                    /* 或者保持内部 1px，外部 2px 覆盖。简单做法是让容器 border 包住所有 */
-                    
-                    .bg-gray { background: #f0f0f0; }
-                    .center { text-align: center; justify-content: center; }
-                    .v-center { display: flex; align-items: center; }
-                    .justify-around { justify-content: space-around; }
-                    .pdf-input { width: 100%; border: none; outline: none; background: transparent; }
-                    .no-padding { padding: 0; }
-                    .hand-write { font-family: 'Brush Script MT', cursive; color: #1890ff; font-size: 18px; }
-                    .text-gray { color: #ccc; }
-                `}</style>
-            </BaseModal>
-
-            {/* [New] 关联单据详情弹窗 (模拟) */}
-            <BaseModal
-                visible={relatedModalVisible}
-                title={`关联异常单详情: ${currentRecord.relatedId}`}
-                width="800px"
-                onClose={() => setRelatedModalVisible(false)}
-                footer={null} // 只读模式，无底部按钮
-            >
-                <div style={{padding:'20px', textAlign:'center'}}>
-                    <div className="q-tag success" style={{marginBottom:'20px', fontSize:'16px'}}>状态: 已结案</div>
-                    <p>此处加载异常单 {currentRecord.relatedId} 的只读详情...</p>
-                    <p style={{color:'#999'}}>(这是一个模拟的嵌套表单视图)</p>
-                </div>
-            </BaseModal>
+            <NonConformingDetail
+                visible={detailVisible}
+                record={currentRecord}
+                isEditing={isEditing}
+                onClose={() => setDetailVisible(false)}
+                onSubmit={handleSubmit}
+            />
         </PageLayout>
     );
 };

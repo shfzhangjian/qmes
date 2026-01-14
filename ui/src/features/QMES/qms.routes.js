@@ -11,4 +11,12 @@ export default {
     // 如果你有不合格品处置单
     '/qms/ncr/list': load(() => import('./NonConformingList.jsx')),
 
+    '/qms/ncr/detail/:id': load(() => import('./NonConformingDetail.jsx')),
+
+
+    // [新增] 进料标准
+    '/qms/iqc/standard': load(() => import('./IqcStandardList.jsx')),
+
+    // [新增] 进料检验记录
+    '/qms/iqc/record': load(() => import('./IqcRecordList.jsx')),
 };
