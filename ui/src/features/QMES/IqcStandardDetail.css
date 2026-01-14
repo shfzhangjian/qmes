@@ -1,51 +1,550 @@
 /**
  * @file: src/features/QMES/IqcStandardDetail.css
- * @description: 进料标准专用样式表 - 保持与 aed 风格高度一致
+ * @description: 进料检验标准详情页样式表 (Final Complete Version)
+ * @version: v10.0.0
+ * - [Layout] 支持窗口化与全屏最大化自适应
+ * - [Table] 修复 Sticky 列边框丢失、表头错位问题
+ * - [UI] 还原 SPC 为勾选框样式
  */
 
+/* ==========================================================================
+   1. 基础容器与弹窗布局 (Overlay & Window)
+   ========================================================================== */
 .iqs-overlay {
-    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.5); z-index: 2000; display: flex; justify-content: center; align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6); /* 深色遮罩 */
+    z-index: 2000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(2px); /* 磨砂玻璃效果 */
 }
 
 .iqs-window {
-    background: #fff; width: 1000px; height: 90vh; border-radius: 4px; display: flex; flex-direction: column; overflow: hidden;
+    background-color: #fff;
+    width: 1200px;
+    height: 95vh;
+    border-radius: 6px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative; /* 为绝对定位的 Drawer 提供锚点 */
+    transition: width 0.2s ease, height 0.2s ease, border-radius 0.2s ease;
 }
 
+/* --- 最大化状态 (Maximize) --- */
+.iqs-window.maximized {
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+    margin: 0;
+    top: 0;
+    left: 0;
+}
+
+/* ==========================================================================
+   2. 顶部工具栏 (Toolbar)
+   ========================================================================== */
 .iqs-toolbar {
-    display: flex; justify-content: space-between; padding: 10px 20px; border-bottom: 1px solid #d9d9d9; background: #fafafa;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    background-color: #fff;
+    border-bottom: 1px solid #ddd;
+    flex-shrink: 0; /* 防止被压缩 */
+    height: 50px;
+    box-sizing: border-box;
 }
 
-.iqs-scroll-area { flex: 1; overflow-y: auto; padding: 20px; background: #f0f2f5; display: flex; justify-content: center; }
+.iqs-toolbar-left,
+.iqs-toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
 
+/* 图标与标题 */
+.iqs-icon {
+    width: 32px;
+    height: 32px;
+    background: #1890ff;
+    color: #fff;
+    border-radius: 4px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 18px;
+}
+
+.iqs-title {
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+}
+
+/* 状态标签 */
+.iqs-status-tag {
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: #f5f5f5;
+    color: #999;
+    border: 1px solid #d9d9d9;
+    font-weight: bold;
+}
+.iqs-status-tag.active {
+    background: #f6ffed;
+    color: #52c41a;
+    border-color: #b7eb8f;
+}
+
+/* 垂直分隔线 */
+.iqs-divider-v {
+    width: 1px;
+    height: 20px;
+    background: #eee;
+    margin: 0 5px;
+}
+
+/* ==========================================================================
+   3. 按钮组件 (Buttons)
+   ========================================================================== */
+.iqs-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 0 12px;
+    height: 32px;
+    border: 1px solid #ccc;
+    background: #fff;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #666;
+    transition: all 0.2s;
+    outline: none;
+}
+
+.iqs-btn:hover:not(:disabled) {
+    color: #1890ff;
+    border-color: #1890ff;
+}
+
+.iqs-btn:disabled {
+    color: #ccc;
+    background: #f5f5f5;
+    cursor: not-allowed;
+}
+
+/* 按钮变体 */
+.iqs-btn.primary {
+    background: #1890ff;
+    color: #fff;
+    border: none;
+}
+.iqs-btn.primary:hover { opacity: 0.9; }
+
+.iqs-btn.danger { color: #ff4d4f; border-color: #ffccc7; }
+.iqs-btn.danger:hover { background: #fff1f0; border-color: #ff4d4f; }
+
+.iqs-btn.active {
+    background: #e6f7ff;
+    color: #1890ff;
+    border-color: #1890ff;
+}
+
+.iqs-btn.icon-only {
+    width: 32px;
+    padding: 0;
+    font-size: 16px;
+}
+.iqs-btn.close:hover {
+    background: #ff4d4f;
+    color: #fff;
+    border-color: #ff4d4f;
+}
+
+/* 小型按钮 (用于表格表头等) */
+.mini-btn {
+    font-size: 12px;
+    padding: 3px 8px;
+    border: 1px solid #ccc;
+    background: #fff;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.2s;
+}
+.mini-btn:hover { color: #1890ff; border-color: #1890ff; }
+.mini-btn.primary { background: #1890ff; color: #fff; border-color: #1890ff; }
+.mini-btn.danger { color: #ff4d4f; border-color: #ffccc7; }
+
+/* ==========================================================================
+   4. 滚动区域与纸张 (Scroll & Paper)
+   ========================================================================== */
+.iqs-scroll-area {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background-color: #f0f2f5;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    /* 关键：确保减去 Header 高度，防止双滚动条 */
+    height: calc(100% - 50px);
+}
+
+/* 最大化时的滚动区域 */
+.iqs-window.maximized .iqs-scroll-area {
+    padding: 10px; /* 减少内边距 */
+    height: calc(100vh - 50px);
+}
+
+/* 预览模式背景 (黄色光晕) */
+.iqs-scroll-area.preview-bg {
+    background-color: #fffbe6;
+}
+.iqs-scroll-area.preview-bg .iqs-paper {
+    box-shadow: 0 0 0 6px rgba(250, 173, 20, 0.4);
+}
+
+/* 纸张容器 (默认 A4 尺寸) */
 .iqs-paper {
-    width: 210mm; background: #fff; padding: 40px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); font-family: "SimSun";
+    width: 210mm;
+    min-height: 250mm;
+    background: #fff;
+    padding: 40px;
+    box-sizing: border-box;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    color: #000;
+    font-family: "SimSun", "Songti SC", serif; /* 宋体 */
+    display: flex;
+    flex-direction: column;
+    transition: width 0.2s ease;
 }
 
-.iqs-header-title { font-size: 24px; font-weight: bold; text-align: center; margin-bottom: 20px; letter-spacing: 2px; }
-
-/* 主从表 Grid 核心定义 */
-.iqs-grid-master, .iqs-grid-detail {
-    display: grid;
-    border-top: 2px solid #000; border-left: 1px solid #000;
-    margin-bottom: -1px;
+/* 核心：全屏模式下纸张宽度拉伸撑满 */
+.iqs-window.maximized .iqs-paper {
+    width: 100%;
+    max-width: none;
+    min-height: 100%;
 }
 
-/* 12列栅格布局 */
-.iqs-grid-detail {
-    grid-template-columns: 8% 14% repeat(6, 6.5%) 5% 8% 8% 13%;
+/* ==========================================================================
+   5. 表单头部与输入控件 (Header & Inputs)
+   ========================================================================== */
+.iqs-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 25px;
 }
 
-/* 仿 aed-cell 样式 */
-.iqs-cell {
-    border-right: 1px solid #000; border-bottom: 1px solid #000;
-    padding: 4px; font-size: 12px; display: flex; align-items: center; justify-content: center; min-height: 32px;
+.iqs-header-title {
+    font-size: 26px;
+    font-weight: bold;
+    text-align: center;
+    flex: 1;
+    letter-spacing: 4px;
+    font-family: "SimHei", sans-serif; /* 黑体 */
 }
 
-.iqs-bg-gray { background: #f0f0f0; }
-.iqs-bold { font-weight: bold; }
-.iqs-vertical { writing-mode: vertical-rl; text-orientation: upright; }
+.iqs-field-group {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 14px;
+}
+.iqs-field-group.right { justify-content: flex-end; }
 
+/* 下划线输入框 */
+.iqs-inline-input {
+    border: none;
+    border-bottom: 1px solid #000;
+    outline: none;
+    width: 120px;
+    text-align: center;
+    font-family: inherit;
+    font-size: 14px;
+    background: transparent;
+}
+.iqs-inline-input.small { width: 60px; }
+
+/* 网格内全宽输入框 */
 .iqs-input {
-    width: 100%; border: none; outline: none; background: transparent; text-align: center; font-size: 13px;
+    width: 100%;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: 12px;
+    padding: 0 4px;
+    box-sizing: border-box;
 }
+.iqs-input.center { text-align: center; }
+
+/* 下拉选择 */
+.iqs-select {
+    width: 100%;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+/* ==========================================================================
+   6. 复杂表格系统 (Complex Table System)
+   ========================================================================== */
+/* 表格外层容器：负责滚动、固定高度 */
+.iqs-table-container {
+    width: 100%;
+    overflow: auto;
+    border: 2px solid #000;
+    background: #fff;
+    position: relative; /* 为 Sticky Header 提供上下文 */
+    margin-bottom: 10px;
+}
+.iqs-table-container.short { height: 180px; }
+.iqs-table-container.tall { height: 400px; resize: vertical; min-height: 200px; }
+
+/* 最大化时，长表格自适应高度 */
+.iqs-window.maximized .iqs-table-container.tall {
+    flex: 1;
+    height: auto;
+}
+
+/* 核心表格样式 */
+.iqs-table {
+    width: 100%;
+    border-collapse: collapse; /* 边框合并 */
+    table-layout: fixed;       /* 列宽严格遵循 colgroup */
+    font-size: 12px;
+}
+
+/* 单元格样式 */
+.iqs-table th,
+.iqs-table td {
+    border: 1px solid #000;
+    padding: 4px;
+    vertical-align: middle;
+    box-sizing: border-box;
+    word-break: break-all;
+}
+
+/* 表头样式 */
+.iqs-table th {
+    background: #f0f0f0;
+    font-weight: bold;
+    text-align: center;
+    height: 32px;
+    position: relative;
+}
+
+/* Sticky Header (纵向滚动时表头固定) */
+.iqs-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+}
+/* 修复 Sticky 表头边框丢失问题 */
+.iqs-table thead th {
+    box-shadow: 0 1px 0 #000, 0 -1px 0 #000 inset;
+    border-bottom: 1px solid #000;
+}
+
+/* 主表特殊样式 (Master Table) */
+.iqs-table.master {
+    margin-bottom: 20px;
+    border: 2px solid #000;
+}
+.iqs-table.master th { background: #f9f9f9; }
+
+/* --- 冻结窗格与分割线 (Sticky Columns) --- */
+.sticky-col {
+    position: sticky;
+    z-index: 10;
+    background: #fff;
+}
+
+
+.sticky-col.c1 {
+    width: var(--checkbox-col-width);
+    left: 0;
+}
+.sticky-col.c2 {
+    width: var(--index-col-width);
+    left: var(--checkbox-col-width);
+}
+
+/* 表头交叉点层级提升 */
+.iqs-table thead .sticky-col {
+    z-index: 30;
+    background: #f0f0f0;
+}
+
+/* 暂无数据提示 */
+.text-gray { color: #999; font-style: italic; }
+
+/* 分节标题栏 */
+.iqs-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-top: 20px;
+    margin-bottom: 6px;
+}
+.iqs-section-title {
+    font-size: 14px;
+    font-weight: bold;
+    border-left: 4px solid #1890ff;
+    padding-left: 8px;
+    line-height: 1;
+}
+.iqs-actions { display: flex; gap: 8px; }
+
+/* ==========================================================================
+   7. 右侧历史抽屉 (History Drawer)
+   ========================================================================== */
+.iqs-history-drawer {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 0;
+    background: #fff;
+    border-left: 1px solid #eee;
+    z-index: 60;
+    transition: width 0.3s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
+}
+
+.iqs-history-drawer.open { width: 320px; }
+
+/* Drawer Header */
+.drawer-header {
+    padding: 12px 15px;
+    border-bottom: 1px solid #eee;
+    background: #fafafa;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.drawer-title { font-weight: bold; font-size: 14px; }
+.icon-btn { cursor: pointer; font-size: 18px; color: #666; }
+.icon-btn:hover { color: #333; }
+
+/* History Timeline */
+.drawer-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 15px;
+}
+
+.history-item {
+    padding-bottom: 20px;
+    border-left: 2px solid #e8e8e8;
+    margin-left: 8px;
+    padding-left: 20px;
+    position: relative;
+}
+.history-item:last-child { border-left: transparent; }
+
+.history-item::before {
+    content: '';
+    position: absolute;
+    left: -5px;
+    top: 0;
+    width: 8px;
+    height: 8px;
+    background: #fff;
+    border: 2px solid #1890ff;
+    border-radius: 50%;
+}
+
+.h-ver { font-weight: bold; font-size: 14px; color: #333; }
+.h-date { font-size: 12px; color: #999; margin: 2px 0; }
+.h-user { font-size: 12px; color: #666; margin-bottom: 4px; }
+.h-remark {
+    background: #f5f5f5;
+    padding: 6px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #666;
+    margin: 5px 0;
+    border: 1px dashed #d9d9d9;
+}
+.h-btn {
+    width: 100%;
+    padding: 5px;
+    border: 1px solid #1890ff;
+    color: #1890ff;
+    background: #fff;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 12px;
+    margin-top: 5px;
+    transition: all 0.2s;
+}
+.h-btn:hover { background: #e6f7ff; }
+
+/* ==========================================================================
+   8. 底部附件抽屉 (Attachment Drawer)
+   ========================================================================== */
+.iqs-attachment-drawer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 0;
+    background: #fff;
+    border-top: 1px solid #eee;
+    z-index: 50;
+    transition: height 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+.iqs-attachment-drawer.open {
+    height: 200px;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.empty-state {
+    text-align: center;
+    color: #ccc;
+    margin-top: 40px;
+    font-size: 14px;
+}
+
+/* ==========================================================================
+   9. 历史预览横幅 (Preview Banner)
+   ========================================================================== */
+.iqs-preview-banner {
+    background: #fffbe6;
+    color: #faad14;
+    border-bottom: 1px solid #ffe58f;
+    padding: 10px 20px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    z-index: 100;
+}
+.link-btn {
+    text-decoration: underline;
+    cursor: pointer;
+    color: #d48806;
+}
+.link-btn:hover { color: #ad6800; }

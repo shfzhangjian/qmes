@@ -17,6 +17,10 @@ export default {
     // [新增] 进料标准
     '/qms/iqc/standard': load(() => import('./IqcStandardList.jsx')),
 
+    '/qms/iqc/standard/detail/:id': load(() => import('./IqcStandardDetail.jsx')),
+
     // [新增] 进料检验记录
     '/qms/iqc/record': load(() => import('./IqcRecordList.jsx')),
+
+    '/qms/iqc/record/detail/:id': load(() => import('./IqcRecordDetail.jsx')),
 };
