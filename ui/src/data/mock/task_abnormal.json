@@ -1,0 +1,54 @@
+[
+  {
+    "id": "ABN-20260114-01",
+    "businessKey": "Quality",
+    "title": "2号涂布机张力波动异常",
+    "desc": "生产过程中张力传感器读数跳动超过 ±5N，导致膜面褶皱。",
+    "status": "PENDING_CONFIRM",
+    "stage": "初步确认",
+    "priority": "high",
+    "initiator": "张操作",
+    "handler": "MGR",
+    "createTime": "2026-01-14 09:30:00",
+    "componentKey": "AbnormalEventDetail"
+  },
+  {
+    "id": "ABN-20260113-05",
+    "businessKey": "Quality",
+    "title": "烘箱温度控制失效",
+    "desc": "3区烘箱温度无法恒定，波动范围 120-135℃，需排查加热管。",
+    "status": "PENDING_ANALYSIS",
+    "stage": "原因分析",
+    "priority": "urgent",
+    "initiator": "李领班",
+    "handler": "PE",
+    "createTime": "2026-01-13 14:15:00",
+    "componentKey": "AbnormalEventDetail"
+  },
+  {
+    "id": "ABN-20260112-08",
+    "businessKey": "Quality",
+    "title": "收卷端静电消除器故障",
+    "desc": "静电测试值 >10KV，易吸附灰尘。",
+    "status": "PENDING_VERIFY",
+    "stage": "效果验证",
+    "priority": "medium",
+    "initiator": "王经理",
+    "handler": "QC",
+    "createTime": "2026-01-12 11:00:00",
+    "componentKey": "AbnormalEventDetail"
+  },
+  {
+    "id": "ABN-20260110-02",
+    "businessKey": "Quality",
+    "title": "涂布液粘度异常偏高",
+    "desc": "在线粘度计读数 2500cps (标准: 2000±100)。",
+    "status": "CLOSED",
+    "stage": "已结案",
+    "priority": "low",
+    "initiator": "赵工艺",
+    "handler": "ALL",
+    "createTime": "2026-01-10 08:45:00",
+    "componentKey": "AbnormalEventDetail"
+  }
+]

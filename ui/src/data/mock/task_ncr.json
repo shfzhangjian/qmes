@@ -1,0 +1,41 @@
+[
+  {
+    "id": "NCR-20260114-03",
+    "businessKey": "NCR",
+    "title": "原材料PET基膜划痕超标",
+    "desc": "IQC 抽检发现批次 LOT-2309 表面存在连续划痕，长度 > 5mm。",
+    "status": "PENDING_REVIEW",
+    "stage": "MRB评审",
+    "priority": "high",
+    "initiator": "李质检",
+    "handler": "MGR",
+    "createTime": "2026-01-14 10:20:00",
+    "componentKey": "NonConformingDetail"
+  },
+  {
+    "id": "NCR-20260113-02",
+    "businessKey": "NCR",
+    "title": "成品分切端面不齐",
+    "desc": "FQC 判定 HC-Film-T92 端面错位 > 1mm。",
+    "status": "DISPOSITION",
+    "stage": "处置执行",
+    "priority": "medium",
+    "initiator": "张操作",
+    "handler": "PE",
+    "createTime": "2026-01-13 16:40:00",
+    "componentKey": "NonConformingDetail"
+  },
+  {
+    "id": "NCR-20260111-09",
+    "businessKey": "NCR",
+    "title": "导电胶固化不完全",
+    "desc": "抽样剥离力测试不合格，怀疑固化剂比例错误。",
+    "status": "CLOSED",
+    "stage": "已关闭",
+    "priority": "urgent",
+    "initiator": "赵工艺",
+    "handler": "ALL",
+    "createTime": "2026-01-11 13:10:00",
+    "componentKey": "NonConformingDetail"
+  }
+]

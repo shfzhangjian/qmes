@@ -1,9 +1,9 @@
 /**
  * @file: src/features/Dashboard/Dashboard.jsx
- * @version: v3.0.0 (Role-Based Scenarios)
- * @description: 仪表盘组件，深度适配五大核心角色场景。
- * 集成 SimulationContext，实现“千人千面”的数据展示与待办互动。
- * @lastModified: 2026-01-13 23:30:00
+ * @version: v3.1.0 (QMS Routes Integration)
+ * @description: 仪表盘组件，适配五大核心角色场景。
+ * 新增 SQE (供应商质量工程师) 角色配置，并集成 IQC/NCR 快捷入口。
+ * @lastModified: 2026-01-14 20:00:00
  */
 import React, { useContext } from 'react';
 import { AppContext } from '../../context/AppContext';
@@ -12,9 +12,9 @@ import './dashboard.css';
 
 const Dashboard = () => {
     const { currentUser, navigate } = useContext(AppContext);
-    const { todos, openModal } = useContext(SimulationContext);
+    const { todos, openTodoDetail } = useContext(SimulationContext);
 
-    // --- 角色配置表 (根据设计文档 V1.1) ---
+    // --- 角色配置表 (根据设计文档 V1.1 & QMS集成) ---
     const getRoleConfig = (role) => {
         const configs = {
             'ADM': {
@@ -25,7 +25,7 @@ const Dashboard = () => {
                 ],
                 shortcuts: [
                     { label: '主数据管理', icon: 'ri-database-2-line', color: '#1890ff', action: () => alert('打开主数据管理') },
-                    { label: 'QMES标准', icon: 'ri-ruler-2-line', color: '#52c41a', action: () => openModal('standard-import') }, // 触发弹窗
+                    { label: 'QMES标准', icon: 'ri-ruler-2-line', color: '#52c41a', action: () => navigate('/qms/iqc/standard') }, // 更新：指向 QMS 标准路由
                     { label: '权限管理', icon: 'ri-shield-user-line', color: '#faad14', action: () => navigate('/system/user') },
                     { label: '审计日志', icon: 'ri-file-list-3-line', color: '#722ed1', action: () => navigate('/system/log') }
                 ],
@@ -66,14 +66,16 @@ const Dashboard = () => {
                     { label: 'IQC合格率', value: '96.2', unit: '%', status: 'success' }
                 ],
                 shortcuts: [
-                    { label: 'IQC/FQC', icon: 'ri-microscope-line', color: '#1890ff', action: () => navigate('/qms/iqc/list') },
+                    // 更新：IQC记录入口
+                    { label: 'IQC记录', icon: 'ri-file-list-line', color: '#1890ff', action: () => navigate('/qms/iqc/record') },
+                    // 更新：标准管理入口
+                    { label: '检验标准', icon: 'ri-book-read-line', color: '#00b578', action: () => navigate('/qms/iqc/standard') },
                     { label: 'NCR处置', icon: 'ri-alarm-warning-line', color: '#ff4d4f', action: () => navigate('/qms/ncr/list') },
-                    { label: '8D评审', icon: 'ri-file-search-line', color: '#52c41a', action: () => navigate('/qms/8d') },
-                    { label: 'COA打印', icon: 'ri-printer-line', color: '#722ed1', action: () => navigate('/rpt/mes/coa') }
+                    { label: '8D评审', icon: 'ri-file-search-line', color: '#722ed1', action: () => navigate('/qms/8d') }
                 ],
                 aiHint: "关于原材料 PET 基膜的异常，供应商已提交 8D 报告。请进行效果验证以闭环结案。"
             },
-            'PE': { // 复用 PE/EQ
+            'PE': {
                 metrics: [
                     { label: 'OEE', value: '82.5', unit: '%', status: 'success' },
                     { label: '待分析异常', value: '1', unit: '件', status: 'error' },
@@ -86,9 +88,24 @@ const Dashboard = () => {
                     { label: 'ECN申请', icon: 'ri-git-merge-line', color: '#722ed1', action: () => navigate('/qms/ecn/apply') }
                 ],
                 aiHint: "请针对 2号机张力波动 异常填写根因分析报告。建议检查张力传感器校准记录。"
+            },
+            // [新增] SQE 角色配置
+            'SQE': {
+                metrics: [
+                    { label: '供应商总数', value: '45', unit: '家', status: 'primary' },
+                    { label: '准入审核中', value: '2', unit: '家', status: 'warning' },
+                    { label: '来料合格率', value: '96.5', unit: '%', status: 'success' }
+                ],
+                shortcuts: [
+                    { label: 'IQC记录', icon: 'ri-file-list-line', color: '#1890ff', action: () => navigate('/qms/iqc/record') },
+                    { label: '供应商档案', icon: 'ri-truck-line', color: '#52c41a', action: () => navigate('/srm/supplier') },
+                    { label: 'NCR处理', icon: 'ri-alarm-warning-line', color: '#faad14', action: () => navigate('/qms/ncr/list') },
+                    { label: '绩效评分', icon: 'ri-pie-chart-line', color: '#722ed1', action: () => navigate('/rpt/srm/score') }
+                ],
+                aiHint: "供应商 'XX化工' 的最近三批次原料连续出现杂质超标，建议发起针对性稽核。"
             }
         };
-        // 默认回退到 ADM 或 空配置
+        // 默认回退到 ADM
         return configs[role] || configs['ADM'];
     };
 
@@ -96,8 +113,12 @@ const Dashboard = () => {
 
     // 处理待办点击
     const handleTodoClick = (todo) => {
-        if (todo.action) {
-            openModal(todo.action, todo.data); // 传入关联数据(Ticket)
+        if (todo.componentKey) {
+            // 优先使用动态详情弹窗
+            openTodoDetail(todo);
+        } else if (todo.action) {
+            // 兼容旧逻辑
+            openModal(todo.action, todo.data);
         } else {
             alert(`点击了: ${todo.title}`);
         }

@@ -1,97 +1,106 @@
 /**
  * @file: src/services/TodoService.js
- * @description: 待办事项统一服务聚合层
- * 核心功能：
- * 1. 定义标准待办结构 (Standard Todo Structure)
- * 2. 从各业务模块(localStorage/API)聚合数据
- * 3. 提供统一的跳转路由逻辑
+ * @version: v2.0.0 (Mock Backend)
+ * @description: 待办服务聚合层
+ * 升级说明：
+ * 1. 移除硬编码逻辑，改为从 src/data/mock 异步加载 JSON。
+ * 2. 实现统一的数据清洗与格式化 (Standard Schema)。
+ * 3. 提供基于角色的模拟查询能力。
  */
 
-// --- 1. 标准待办结构定义 ---
-/*
-const TodoItem = {
-    id: "TASK-001",           // 唯一任务ID
-    businessId: "ABN-2026-001", // 业务单据号
-    type: "abnormal",         // 业务类型: abnormal | check | approval
-    title: "涂布机张力异常处理", // 任务标题
-    desc: "待初步确认 - 生产部", // 任务描述
-    priority: "high",         // 优先级: high | medium | low
-    status: "pending",        // 状态: pending | processing | done
-    time: "2026-01-14 10:00", // 时间
-    route: "/qms/abnormal",   // 跳转路由
-    handler: "mgr",           // 当前处理人ID
-};
-*/
+// 模拟异步请求延迟
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-// --- 2. 业务数据适配器 ---
-
-// 适配器：将异常单转换为标准待办
-const mapAbnormalToTodo = (ticket) => {
-    let priority = 'medium';
-    if (ticket.level === '严重') priority = 'high';
-    else if (ticket.level === '轻微') priority = 'low';
-
-    // 状态映射
-    const isDone = ticket.status === 'CLOSED';
-
-    return {
-        id: `TASK-${ticket.id}`,
-        businessId: ticket.id,
-        type: 'abnormal',
-        tag: '异常',
-        title: ticket.desc || '未填写描述',
-        desc: `[${getStatusCN(ticket.status)}] ${ticket.dept || ''}`,
-        priority: priority,
-        status: isDone ? 'done' : 'pending',
-        time: ticket.updateTime || ticket.date,
-        route: '/qms/abnormal', // 关键：定义跳转目标页面
-        handler: ticket.currentHandler,
-        rawData: ticket
-    };
-};
-
-// 辅助：状态转中文
-const getStatusCN = (s) => ({
-    'DRAFT': '草稿',
-    'PENDING_CONFIRM': '待初步确认',
-    'PENDING_QA_CONFIRM': '待品质确认',
-    'PENDING_CONTAINMENT': '待围堵',
-    'PENDING_ANALYSIS': '待分析',
-    'PENDING_VERIFY': '待验证',
-    'CLOSED': '已结案'
-}[s] || s);
-
-// --- 3. 核心服务方法 ---
+// 导入模拟数据 (Vite Glob Import 方式或直接 Import)
+import abnormalData from '../data/mock/task_abnormal.json';
+import ncrData from '../data/mock/task_ncr.json';
 
 /**
- * 获取我的待办列表 (聚合所有业务)
- * @param {Object} user 当前登录用户对象
+ * 核心：标准待办数据模型 (Standard Todo Schema)
+ * @typedef {Object} TodoItem
+ * @property {string} id - 唯一任务ID
+ * @property {string} type - 视觉类型 (red/orange/blue/green)
+ * @property {string} tag - 标签文本 (异常/NCR/审批)
+ * @property {string} text - 任务标题/内容
+ * @property {string} desc - 详细描述 (用于列表副标题)
+ * @property {string} time - 时间字符串
+ * @property {string} status - 状态文本 (待办/进行中/已完成)
+ * @property {string} priority - 优先级 (紧急/高/中/低)
+ * @property {string} componentKey - 关联的详情组件Key (用于动态加载)
+ * @property {Object} rawData - 原始业务数据
  */
-export const getMyTodos = (user) => {
-    if (!user) return [];
 
-    // 1. 获取异常模块数据 (模拟从 DB/LocalStorage 取)
-    const storedTickets = JSON.parse(localStorage.getItem('QMES_ABNORMAL_TICKETS') || '[]');
+/**
+ * 获取所有任务 (模拟后端查询)
+ * @param {Object} filter - 过滤条件 { role, status, type }
+ */
+export const fetchTodos = async (filter = {}) => {
+    await delay(300); // 模拟网络延迟
 
-    // 2. 过滤属于我的任务
-    const myAbnormalTasks = storedTickets
-        .filter(t => t.currentHandler === user.username && t.status !== 'CLOSED')
-        .map(mapAbnormalToTodo);
+    // 1. 合并所有数据源
+    let allTasks = [
+        ...abnormalData.map(item => mapToSchema(item, 'abnormal')),
+        ...ncrData.map(item => mapToSchema(item, 'ncr'))
+    ];
 
-    // 3. (可选) 这里可以合并其他模块任务，如审批流、点检任务等
-    // const myApprovalTasks = ...
+    // 2. 执行过滤逻辑 (模拟后端 SQL Where)
+    if (filter.role && filter.role !== 'ADM') {
+        // 简单模拟：如果是管理员看所有，否则看 handler 匹配或 handler='ALL'
+        // 实际业务中会有更复杂的 ACL 控制
+        allTasks = allTasks.filter(t => t.handler === filter.role || t.handler === 'ALL');
+    }
 
-    // 4. 按时间倒序排列
-    return [...myAbnormalTasks].sort((a, b) => new Date(b.time) - new Date(a.time));
+    if (filter.status) {
+        // 映射前端状态 Tab 到后端状态
+        if (filter.status === '待办') {
+            allTasks = allTasks.filter(t => !['CLOSED', 'DONE'].includes(t.rawData.status));
+        } else if (filter.status === '已完成') {
+            allTasks = allTasks.filter(t => ['CLOSED', 'DONE'].includes(t.rawData.status));
+        }
+    }
+
+    // 3. 排序 (按时间倒序)
+    return allTasks.sort((a, b) => new Date(b.time) - new Date(a.time));
 };
 
 /**
- * 获取待办统计数据 (用于Dashboard Badge)
+ * 数据适配器：将不同业务的 JSON 转换为统一 UI 格式
  */
-export const getTodoStats = (user) => {
-    const todos = getMyTodos(user);
+const mapToSchema = (item, sourceType) => {
+    // 状态映射 UI 颜色/文本
+    const isClosed = ['CLOSED', 'DONE'].includes(item.status);
+
+    let typeColor = 'blue';
+    let tagName = '任务';
+
+    if (sourceType === 'abnormal') {
+        typeColor = 'red';
+        tagName = '异常';
+    } else if (sourceType === 'ncr') {
+        typeColor = 'orange';
+        tagName = 'NCR';
+    }
+
     return {
-        total: todos.length,
-        high: todos.filter(t => t.priority === 'high').length
+        id: item.id,
+        type: typeColor, // UI badge color
+        tag: tagName,    // UI badge text
+        title: item.title,
+        desc: item.desc,
+        status: isClosed ? '已完成' : '待办', // 简化状态用于列表展示
+        priority: mapPriorityCN(item.priority),
+        time: item.createTime.substring(0, 16),
+        handler: item.handler, // 用于权限过滤
+        componentKey: item.componentKey, // 关键：指向详情组件
+        rawData: item // 保留原始数据以备详情弹窗使用
     };
+};
+
+const mapPriorityCN = (p) => {
+    const map = { 'urgent': '紧急', 'high': '高', 'medium': '中', 'low': '低' };
+    return map[p] || '中';
+};
+
+export default {
+    fetchTodos
 };

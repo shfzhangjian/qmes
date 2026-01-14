@@ -276,7 +276,7 @@
         {
           "title": "标准定义",
           "items": [
-            { "label": "检验标准管理", "roles": ["QC", "PE"], "path": "/qms/base/std", "desc": "检验项目与指标定义" },
+            { "label": "检验标准管理", "roles": ["QC", "PE"], "path": "/qms/iqc/standard", "desc": "检验项目与指标定义" },
             { "label": "缺陷库管理", "roles": ["QC"], "path": "/qms/base/defect", "desc": "不良现象代码维护" },
             { "label": "抽样方案设置", "roles": ["QC"], "path": "/qms/base/sample", "desc": "AQL抽样水准" },
             { "label": "单位换算配置", "roles": ["QC"], "path": "/qms/base/unit", "desc": "采购与检验单位转换" }
@@ -292,7 +292,7 @@
         {
           "title": "来料检验",
           "items": [
-            { "label": "IQC检验单", "roles": ["QC"], "path": "/qms/iqc/list", "desc": "原材料检验录入" }
+            { "label": "IQC检验单", "roles": ["QC"], "path": "/qms/iqc/record", "desc": "原材料检验录入" }
           ]
         },
         {

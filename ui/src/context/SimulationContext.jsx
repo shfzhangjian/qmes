@@ -1,165 +1,213 @@
 /**
  * @file: src/context/SimulationContext.jsx
- * @version: v1.0.0 (Global State Init)
+ * @version: v3.0.0 (Native Modal Support)
  * @description: 模拟业务数据上下文
- * 负责管理演示场景中的核心状态：异常单据流转、动态待办列表、全局弹窗控制。
- * 实现了文档中定义的 Ticket 模型和跨角色待办分发逻辑。
- * @lastModified: 2026-01-13 23:30:00
+ * 核心升级：
+ * - [Fix] 修复 Dashboard 弹窗风格不一致问题。
+ * - [Feat] 支持 "Native Modal" 模式：对于自带完善 UI (如 AbnormalEventDetail) 的组件，
+ * 不再强制包裹通用外壳，直接渲染以保持 100% 原生体验。
  */
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect, Suspense } from 'react';
 import { AppContext } from './AppContext';
+import { fetchTodos } from '../services/TodoService';
+
+// --- 1. 动态组件注册表 (配置增强) ---
+// 格式: key: { component: LazyComponent, native: boolean }
+// native: true 表示该组件自带 Overlay 和 Window，不需要 Context 再包一层
+const RegistryConfig = {
+    // 异常详情页 (自带全套 UI)
+    'AbnormalEventDetail': {
+        component: React.lazy(() => import('../features/QMES/AbnormalEventDetail.jsx')),
+        native: true
+    },
+    // NCR 详情页 (自带全套 UI)
+    'NonConformingDetail': {
+        component: React.lazy(() => import('../features/QMES/NonConformingDetail.jsx')),
+        native: true
+    },
+    // 默认详情页 (纯内容，需要包裹)
+    'DefaultDetail': {
+        component: React.lazy(() => import('../components/DetailModal.jsx')),
+        native: false
+    },
+
+    // 旧功能弹窗
+    'standard-import': { component: React.lazy(() => import('../features/Simulation/StandardImportModal.jsx')), native: false },
+    'production-entry': { component: React.lazy(() => import('../features/Simulation/ProductionEntryModal.jsx')), native: false },
+    'ticket-process': { component: React.lazy(() => import('../features/Simulation/TicketProcessModal.jsx')), native: false }
+};
 
 export const SimulationContext = createContext();
 
 export const SimulationProvider = ({ children }) => {
     const { currentUser } = useContext(AppContext);
 
-    // --- 1. 全局弹窗状态管理 ---
-    // activeModal: 'standard-import' | 'production-entry' | 'ticket-process' | null
+    // --- State ---
     const [activeModal, setActiveModal] = useState(null);
-    const [modalData, setModalData] = useState(null); // 传递给弹窗的上下文数据
+    const [modalData, setModalData] = useState(null);
+    const [CurrentModalObj, setCurrentModalObj] = useState(null); // 存储当前选中的配置对象 { component, native }
 
-    // --- 2. 模拟数据库：异常单据 (Tickets) ---
-    const [tickets, setTickets] = useState([
-        // 预置一条已流转到 QC 的单据，方便演示
-        {
-            id: 'HC/R-23-1-33',
-            status: 'PENDING_VERIFY',
-            initiator: '张操作',
-            type: 'Quality',
-            description: '原材料 PET 基膜表面存在晶点，影响涂布外观。',
-            containment: '冻结该批次原料，切换备用供应商材料生产。 (王经理)',
-            rootCause: '供应商生产环境洁净度不足，导致异物混入。 (赵工艺)',
-            solution: '供应商已提交 8D 报告，并加装在线检测仪。 (赵工艺)',
-            logs: [
-                { role: 'OP', action: '发起', time: '2026-01-12 09:30' },
-                { role: 'MGR', action: '围堵', time: '2026-01-12 10:15' },
-                { role: 'PE', action: '分析', time: '2026-01-13 14:00' }
-            ]
-        }
-    ]);
-
-    // --- 3. 模拟数据库：待办事项 (Todos) ---
-    // 根据角色动态生成，并随 ticket 状态变化而变化
     const [todos, setTodos] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [tickets, setTickets] = useState([]);
 
-    // 初始化/重置待办数据
+    // --- Effect: 加载待办 ---
     useEffect(() => {
-        if (!currentUser) return;
+        if (currentUser) loadUserTodos();
+    }, [currentUser]);
 
-        const role = currentUser.role;
-        let baseTodos = [];
-
-        // 3.1 基于文档规划的初始待办
-        if (role === 'ADM') {
-            baseTodos = [
-                { id: 'ADM-01', title: '导入新版《进料检验标准》V2.0', type: 'task', status: 'pending', action: 'standard-import' },
-                { id: 'ADM-02', title: '新员工账号开通申请', type: 'approval', status: 'pending' }
-            ];
-        } else if (role === 'OP') {
-            baseTodos = [
-                { id: 'OP-01', title: '10:00 节点工艺参数查录', type: 'record', status: 'pending', action: 'production-entry' },
-                { id: 'OP-02', title: '涂布头清洁度检查 (SOP要求)', type: 'check', status: 'pending' }
-            ];
-        } else if (role === 'MGR') {
-            baseTodos = [
-                { id: 'MGR-01', title: 'HC-Film-T92 试产方案审批', type: 'approval', status: 'pending' }
-            ];
-        } else if (role === 'PE') {
-            baseTodos = [
-                { id: 'PE-01', title: 'RTO 蓄热体清理保养', type: 'maintenance', status: 'pending' }
-            ];
-        } else if (role === 'QC') {
-            baseTodos = [
-                { id: 'QC-01', title: '工单 WO-20260113 首件确认', type: 'check', status: 'pending' }
-            ];
+    const loadUserTodos = async () => {
+        setLoading(true);
+        try {
+            const data = await fetchTodos({ role: currentUser.role });
+            setTodos(data);
+        } catch (e) {
+            console.error("Failed to load todos:", e);
+        } finally {
+            setLoading(false);
         }
+    };
 
-        // 3.2 将 Tickets 映射为待办
-        const ticketTodos = tickets.map(t => {
-            // 逻辑：根据 Ticket 状态分发给不同角色
-            if (t.status === 'PENDING_CONFIRM' && role === 'MGR') {
-                return { id: `T-CONFIRM-${t.id}`, title: `异常初步确认: ${t.description.substring(0, 10)}...`, type: 'abnormal', status: 'pending', action: 'ticket-process', data: t };
-            }
-            if (t.status === 'PENDING_ANALYSIS' && (role === 'PE' || role === 'EQ')) {
-                return { id: `T-ANALYZE-${t.id}`, title: `异常根因分析: ${t.id}`, type: 'abnormal', status: 'pending', action: 'ticket-process', data: t };
-            }
-            if (t.status === 'PENDING_VERIFY' && role === 'QC') {
-                return { id: `T-VERIFY-${t.id}`, title: `纠正措施效果验证: ${t.id}`, type: 'abnormal', status: 'pending', action: 'ticket-process', data: t };
-            }
-            return null;
-        }).filter(Boolean);
+    // --- Action: 打开动态详情 ---
+    const openTodoDetail = (todoItem) => {
+        const key = todoItem.componentKey || 'DefaultDetail';
+        const config = RegistryConfig[key] || RegistryConfig['DefaultDetail'];
 
-        setTodos([...baseTodos, ...ticketTodos]);
+        setCurrentModalObj(config);
+        setModalData(todoItem.rawData || todoItem);
+        setActiveModal('dynamic-detail-view');
+    };
 
-    }, [currentUser, tickets]);
-
-    // --- 4. 核心 Action：打开功能弹窗 ---
+    // --- Action: 打开普通弹窗 ---
     const openModal = (type, data = null) => {
-        setModalData(data);
-        setActiveModal(type);
+        const config = RegistryConfig[type];
+        if (config) {
+            setCurrentModalObj(config);
+            setModalData(data);
+            setActiveModal(type);
+        } else {
+            // 兼容未注册的旧逻辑 (纯标记)
+            setCurrentModalObj(null);
+            setModalData(data);
+            setActiveModal(type);
+        }
     };
 
     const closeModal = () => {
         setActiveModal(null);
         setModalData(null);
+        setCurrentModalObj(null);
     };
 
-    // --- 5. 业务逻辑 Action ---
-
-    // [OP] 发起异常
+    // --- Business Actions ---
     const createTicket = (newTicket) => {
-        const ticket = {
-            ...newTicket,
-            id: `HC/R-26-${Math.floor(Math.random() * 1000)}`,
-            status: 'PENDING_CONFIRM',
-            initiator: currentUser.name,
-            logs: [{ role: 'OP', action: '发起', time: new Date().toLocaleString() }]
-        };
+        const ticketId = `HC/R-26-${Math.floor(Math.random() * 1000)}`;
+        const ticket = { ...newTicket, id: ticketId, status: 'PENDING_CONFIRM', createTime: new Date().toLocaleString() };
         setTickets(prev => [ticket, ...prev]);
+        setTodos(prev => [{
+            id: `TASK-${ticketId}`, type: 'red', tag: '异常', text: `(新) ${ticket.description}`, priority: '高', status: '待办', time: '刚刚', componentKey: 'AbnormalEventDetail', rawData: ticket
+        }, ...prev]);
         return ticket;
     };
 
-    // [MGR/PE/QC] 更新单据流转
-    const updateTicket = (ticketId, updates, nextStatus) => {
-        setTickets(prev => prev.map(t => {
-            if (t.id === ticketId) {
-                return {
-                    ...t,
-                    ...updates,
-                    status: nextStatus,
-                    logs: [...t.logs, { role: currentUser.role, action: getActionName(nextStatus), time: new Date().toLocaleString() }]
-                };
+    const importStandard = () => {
+        setTimeout(() => {
+            alert("导入成功！标准库已更新。");
+            setTodos(prev => prev.filter(t => t.id !== 'ADM-2026-001'));
+            closeModal();
+        }, 800);
+    };
+
+    const updateTicket = (id, updates) => {
+        setTodos(prev => prev.map(item => {
+            if (item.rawData && item.rawData.id === id) {
+                const newRaw = { ...item.rawData, ...updates };
+                return { ...item, rawData: newRaw, status: newRaw.status === 'CLOSED' ? '已完成' : item.status };
             }
-            return t;
+            return item;
         }));
     };
 
-    const getActionName = (status) => {
-        if (status === 'PENDING_ANALYSIS') return '确认&围堵';
-        if (status === 'PENDING_VERIFY') return '分析&对策';
-        if (status === 'CLOSED') return '验证&结案';
-        return '更新';
-    };
-
-    // [IT] 导入标准
-    const importStandard = () => {
-        // 模拟耗时，然后移除 ADM 的待办
-        setTimeout(() => {
-            setTodos(prev => prev.filter(t => t.id !== 'ADM-01'));
-            alert("导入成功！标准库已更新。");
-            closeModal();
-        }, 1000);
-    };
+    // --- 渲染逻辑 ---
+    // 提取当前组件
+    const ModalComponent = CurrentModalObj?.component;
+    const isNative = CurrentModalObj?.native;
 
     return (
         <SimulationContext.Provider value={{
-            tickets, todos,
-            activeModal, modalData,
-            openModal, closeModal,
+            todos, loading, tickets, activeModal, modalData,
+            refreshTodos: loadUserTodos, openTodoDetail, openModal, closeModal,
             createTicket, updateTicket, importStandard
         }}>
             {children}
+
+            {/* --- 全局弹窗挂载点 --- */}
+            {activeModal && ModalComponent && (
+                <Suspense fallback={<div className="aip-global-loading"><i className="ri-loader-4-line spin"></i> 加载中...</div>}>
+
+                    {/* 分支 1: Native 模式 (AbnormalEventDetail 等) */}
+                    {/* 直接渲染组件，不加任何外壳，让组件自己控制 Overlay 和 Window */}
+                    {isNative ? (
+                        <ModalComponent
+                            visible={true}         // 兼容旧属性名
+                            isOpen={true}          // 兼容新属性名
+                            data={modalData}       // 数据
+                            record={modalData}     // 兼容旧属性名
+                            onClose={closeModal}   // 关闭回调
+                            onUpdate={updateTicket}
+                            // 关键：不传 isModal={true} 或者传 false，让组件保持其 "独立窗口" 的样式 (带阴影、带遮罩)
+                            isModal={false}
+                        />
+                    ) : (
+                        // 分支 2: 通用模式 (DefaultDetail 等)
+                        // 使用通用白色外壳包裹
+                        <div className="aip-global-overlay open" style={{ zIndex: 1050 }}>
+                            <div className="aip-modal-container" style={defaultContainerStyle}>
+                                <div className="aip-modal-header" style={defaultHeaderStyle}>
+                                    <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#333' }}>
+                                        {modalData?.title || '任务详情'}
+                                    </div>
+                                    <i className="ri-close-line" onClick={closeModal} style={{ fontSize: '24px', cursor: 'pointer' }}></i>
+                                </div>
+                                <div className="aip-modal-body" style={{ flex: 1, overflowY: 'auto' }}>
+                                    <ModalComponent
+                                        data={modalData}
+                                        isOpen={true}
+                                        onClose={closeModal}
+                                        onUpdate={updateTicket}
+                                        isModal={true} // 告诉内部组件它是被包裹的
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </Suspense>
+            )}
+
+            <style>{`
+                .aip-global-overlay {
+                    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+                    background: rgba(0, 0, 0, 0.45); backdrop-filter: blur(3px);
+                    display: flex; justify-content: center; align-items: center;
+                    opacity: 1; pointer-events: auto;
+                }
+                .aip-global-loading {
+                    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+                    background: rgba(0,0,0,0.7); color: white; padding: 15px 30px;
+                    border-radius: 4px; z-index: 9999; display: flex; align-items: center; gap: 10px;
+                }
+                .spin { animation: spin 1s linear infinite; }
+                @keyframes spin { 100% { transform: rotate(360deg); } }
+            `}</style>
         </SimulationContext.Provider>
     );
+};
+
+// 样式常量
+const defaultContainerStyle = {
+    width: '900px', height: '85vh', background: '#fff', borderRadius: '8px',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.15)', display: 'flex', flexDirection: 'column', overflow: 'hidden'
+};
+const defaultHeaderStyle = {
+    padding: '16px 24px', borderBottom: '1px solid #f0f0f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#fafafa'
 };

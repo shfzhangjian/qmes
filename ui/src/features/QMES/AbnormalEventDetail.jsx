@@ -1,11 +1,12 @@
 /**
  * @file: src/features/QMES/AbnormalEventDetail.jsx
- * @version: v14.1.1 (Fix ReferenceError)
+ * @version: v15.0.2 (Fix Initialization Error)
  * @description: 异常事件处置单详情 - 修复版
- * - [Fix] 将 getStatusLabel 和 getSectionLabel 移至组件外部，解决 "not defined" 报错。
- * - [Keep] 保留所有流程集成、时长显示、权限控制等功能。
+ * - [Fix] 修复 "Cannot access 'calculateDuration' before initialization" 错误。
+ * - [Fix] 调整代码顺序：Helper 函数定义移至 useEffect 之前。
  */
 import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import UploadModal from '../../components/Common/UploadModal';
 import LogPanel from '../../components/Common/LogPanel';
 import BaseModal from '../../components/Common/BaseModal';
@@ -24,21 +25,10 @@ const Cell = ({ children, span = 1, className = '', style = {}, title, vertical,
 
 const Label = ({ children }) => <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>{children}</div>;
 
-// =============================================================================
-// [Updated Component] Input 组件 v2.0
-// 修改历史:
-// - 2026-01-14 14:00:00 [Fix] 修复只读模式下 type="date" 显示占位符问题。
-// - 2026-01-14 14:50:00 [Upgrade]
-//   1. 增加对 type="datetime-local" 的支持，解决"确认时间"显示 yyyy/mm/dd 的问题。
-//   2. 增加 formatDisplayValue 函数，去除 datetime-local 中间的 'T'。
-//   3. 添加 onKeyDown 拦截，实现"日期不要填写，只能通过选择组件设置"。
-// =============================================================================
 const Input = ({ value, onChange, align = 'left', placeholder, type = 'text', section, suggestions, isEditing, canEdit, style, forceReadOnly, underline }) => {
-    // 1. 权限与编辑态判断
     const sectionEditable = !section || (canEdit && canEdit(section));
     const editable = !forceReadOnly && isEditing && sectionEditable;
 
-    // 2. 样式计算
     let finalStyle = { textAlign: align, ...style };
     let className = `aed-input ${!editable ? 'readonly' : 'editable-field'}`;
 
@@ -50,13 +40,9 @@ const Input = ({ value, onChange, align = 'left', placeholder, type = 'text', se
         finalStyle = { ...finalStyle, padding: '4px' };
     }
 
-    // 3. [关键修复] 日期/时间控件特殊处理
     const isDateControl = type === 'date' || type === 'datetime-local';
-
-    // 如果是日期类控件，且处于只读模式，强制转为 text 以隐藏浏览器默认的 yyyy/mm/dd 占位符
     const renderType = (isDateControl && !editable) ? 'text' : type;
 
-    // 优化显示值：如果是 datetime-local 转 text，把中间的 'T' 换成空格，看起来更像人类语言
     let displayValue = value || '';
     if (renderType === 'text' && type === 'datetime-local' && displayValue.includes('T')) {
         displayValue = displayValue.replace('T', ' ');
@@ -71,13 +57,11 @@ const Input = ({ value, onChange, align = 'left', placeholder, type = 'text', se
             onChange={e => editable && onChange && onChange(e.target.value)}
             readOnly={!editable}
             placeholder={editable ? placeholder : ''}
-            // [新增] 禁止在日期控件中手动输入，强制只能用鼠标点击选择
             onKeyDown={(e) => {
                 if (editable && isDateControl) {
                     e.preventDefault();
                 }
             }}
-            // [新增] 点击输入框直接弹出日期选择器 (提升体验)
             onClick={(e) => {
                 if (editable && isDateControl && e.target.showPicker) {
                     e.target.showPicker();
@@ -123,27 +107,39 @@ const SectionAttachment = ({ sectionKey, isEditing, onUploadClick, files }) => {
 // 2. 主组件 (AbnormalEventDetail)
 // =============================================================================
 
-const AbnormalEventDetail = ({ visible, onClose, record, isEditing: initialEditing, onSubmit }) => {
-    if (!visible) return null;
+const AbnormalEventDetail = (props) => {
+    // -------------------------------------------------------------------------
+    // 1. Hook 声明区 (必须在任何 return 之前！)
+    // -------------------------------------------------------------------------
 
-    // --- State ---
+    // Props 处理
+    const isModal = props.isModal || false;
+    const visible = props.isOpen !== undefined ? props.isOpen : (props.visible !== undefined ? props.visible : true);
+    const recordFromProps = props.data || props.record;
+    const onCloseProp = props.onClose;
+    const onSubmitProp = props.onUpdate || props.onSubmit;
+
+    // Router Hooks
+    const { id: routeId } = useParams();
+    const navigate = useNavigate();
+
+    // State Hooks
     const [data, setData] = useState({});
     const [tempTeam, setTempTeam] = useState([]);
-    const [isEditing, setIsEditing] = useState(false);
+    const [isEditing, setIsEditing] = useState(props.isEditing || false);
     const [isMaximized, setIsMaximized] = useState(false);
     const [stepDuration, setStepDuration] = useState('');
 
-    // Modal Visibility
+    // Modal Visibility State
     const [showAttachmentDrawer, setShowAttachmentDrawer] = useState(false);
     const [uploadModalVisible, setUploadModalVisible] = useState(false);
     const [logPanelVisible, setLogPanelVisible] = useState(false);
     const [relatedNcrVisible, setRelatedNcrVisible] = useState(false);
     const [processModalVisible, setProcessModalVisible] = useState(false);
-
     const [currentUploadSection, setCurrentUploadSection] = useState(null);
     const [fileList, setFileList] = useState([]);
 
-    // Mock Logs
+    // Data Mock
     const mockLogs = {
         flows: [
             { node: '异常发起', status: 'done', operator: '张操作', time: '2026-01-12 09:30', comment: '发现涂布厚度异常' },
@@ -152,49 +148,10 @@ const AbnormalEventDetail = ({ visible, onClose, record, isEditing: initialEditi
         logs: [{ user: '张操作', action: '创建单据', time: '2026-01-12 09:25' }]
     };
 
-    // --- Initialization ---
-    useEffect(() => {
-        const initData = record || {};
-        // Data Mock Fixes
-        if (initData.id === 'ABN-2026-009') {
-            initData.status = 'CLOSED';
-            initData.isRelated = '是';
-            initData.relatedNcrId = 'NCR-2026-055';
-            initData.verifyResult = 'OK';
-            initData.verifyUser = '李质检';
-            initData.verifyDate = '2026-01-14';
-            initData.verifyComment = '经连续3批次验证，问题未再复发。';
-        }
-        if (!initData.stepStartTime) {
-            initData.stepStartTime = new Date(Date.now() - 1000 * 60 * 60 * 26).toISOString();
-        }
+    // -------------------------------------------------------------------------
+    // 2. 辅助函数定义区 (关键修复：必须放在 useEffect 之前定义！)
+    // -------------------------------------------------------------------------
 
-        setData({ ...initData });
-        calculateDuration(initData.stepStartTime);
-
-        // Init Team
-        if (initData.tempTeam && initData.tempTeam.length > 0) {
-            setTempTeam(initData.tempTeam);
-        } else {
-            setTempTeam([
-                { id: 1, dept: '', name: '', sign: '', date: '', isLeader: false },
-                { id: 2, dept: '', name: '', sign: '', date: '', isLeader: false },
-                { id: 3, dept: '', name: '', sign: '', date: '', isLeader: false },
-                { id: 4, dept: '', name: '', sign: '', date: '', isLeader: false }
-            ]);
-        }
-
-        setFileList([
-            { name: '现场异常照片.pdf', size: '2.4 MB', type: 'pdf', section: 'discovery' },
-            { name: '改善对策报告.pptx', size: '5.1 MB', type: 'ppt', section: 'analysis' }
-        ]);
-
-        setIsEditing(initialEditing);
-        setIsMaximized(false);
-        setShowAttachmentDrawer(false);
-    }, [record, initialEditing, visible]);
-
-    // Duration Logic
     const calculateDuration = (startTime) => {
         if (!startTime) { setStepDuration('0小时'); return; }
         const start = new Date(startTime).getTime();
@@ -211,7 +168,6 @@ const AbnormalEventDetail = ({ visible, onClose, record, isEditing: initialEditi
         setStepDuration(durationStr);
     };
 
-    // Handlers
     const handleFieldChange = (field, value) => setData(prev => ({ ...prev, [field]: value }));
     const handleTeamChange = (id, field, value) => setTempTeam(prev => prev.map(item => item.id === id ? { ...item, [field]: value } : item));
     const handleSetLeader = (id) => setTempTeam(prev => prev.map(item => ({ ...item, isLeader: item.id === id })));
@@ -245,7 +201,7 @@ const AbnormalEventDetail = ({ visible, onClose, record, isEditing: initialEditi
 
         setProcessModalVisible(false);
         setIsEditing(false);
-        if (onSubmit) onSubmit(newData, msg);
+        if (onSubmitProp) onSubmitProp(newData, msg);
     };
 
     const handleNotifyTeam = () => {
@@ -292,14 +248,102 @@ const AbnormalEventDetail = ({ visible, onClose, record, isEditing: initialEditi
         setCurrentUploadSection(null);
     };
 
+    // -------------------------------------------------------------------------
+    // 3. Effect Hooks (初始化数据) - 放在辅助函数定义之后
+    // -------------------------------------------------------------------------
+    useEffect(() => {
+        let initData = {};
+
+        // 策略：优先使用 Props 传入的数据，其次尝试从 URL ID 模拟加载
+        if (recordFromProps) {
+            initData = { ...recordFromProps };
+        } else if (routeId && !isModal) {
+            console.log(`Fetching data for ID: ${routeId}`);
+            initData = {
+                id: routeId,
+                status: 'PENDING_ANALYSIS',
+                dept: '生产部',
+                date: '2026-01-14',
+                finder: '张操作',
+                desc: '模拟数据：通过 URL 访问加载的异常详情。',
+                type: '生产异常',
+                level: '一般',
+                stepStartTime: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString()
+            };
+        }
+
+        // Data Mock Fixes & Defaults
+        if (initData.id === 'ABN-2026-009') {
+            initData.status = 'CLOSED';
+            initData.isRelated = '是';
+            initData.relatedNcrId = 'NCR-2026-055';
+            initData.verifyResult = 'OK';
+            initData.verifyUser = '李质检';
+            initData.verifyDate = '2026-01-14';
+            initData.verifyComment = '经连续3批次验证，问题未再复发。';
+        }
+        if (!initData.stepStartTime) {
+            initData.stepStartTime = new Date(Date.now() - 1000 * 60 * 60 * 26).toISOString();
+        }
+
+        setData(initData);
+        // ✅ 此时 calculateDuration 已经定义，可以安全调用
+        calculateDuration(initData.stepStartTime);
+
+        // Init Team
+        if (initData.tempTeam && initData.tempTeam.length > 0) {
+            setTempTeam(initData.tempTeam);
+        } else {
+            setTempTeam([
+                { id: 1, dept: '', name: '', sign: '', date: '', isLeader: false },
+                { id: 2, dept: '', name: '', sign: '', date: '', isLeader: false },
+                { id: 3, dept: '', name: '', sign: '', date: '', isLeader: false },
+                { id: 4, dept: '', name: '', sign: '', date: '', isLeader: false }
+            ]);
+        }
+
+        setFileList([
+            { name: '现场异常照片.pdf', size: '2.4 MB', type: 'pdf', section: 'discovery' },
+            { name: '改善对策报告.pptx', size: '5.1 MB', type: 'ppt', section: 'analysis' }
+        ]);
+
+        setIsEditing(props.isEditing || false);
+        setIsMaximized(false);
+        setShowAttachmentDrawer(false);
+    }, [recordFromProps, routeId, isModal, props.isEditing]);
+
+    // -------------------------------------------------------------------------
+    // 4. 逻辑阻断区 (Guard Clause) - 必须放在所有 Hook 之后！
+    // -------------------------------------------------------------------------
+    if (!visible && !routeId) return null;
+
+    // -------------------------------------------------------------------------
+    // 5. Render Helpers
+    // -------------------------------------------------------------------------
+
+    const handleClose = () => {
+        if (onCloseProp) {
+            onCloseProp();
+        } else {
+            navigate(-1);
+        }
+    };
+
     const commonProps = { isEditing, canEdit: checkCanEdit };
     const hasRelatedProduct = data.isRelated === '是';
     const showRelatedLink = hasRelatedProduct && data.relatedNcrId;
     const discoveryRowSpan = 5 + (hasRelatedProduct ? 1 : 0);
 
+    const overlayStyle = isModal ? { position: 'static', width: '100%', height: '100%', background: 'transparent', zIndex: 'auto' } : {};
+    const windowStyle = isModal ? { width: '100%', height: '100%', borderRadius: 0, boxShadow: 'none', transform: 'none' } : {};
+    const windowClass = `aed-window ${isMaximized && !isModal ? 'maximized' : ''}`;
+
+    // -------------------------------------------------------------------------
+    // 6. JSX 渲染区
+    // -------------------------------------------------------------------------
     return (
-        <div className="aed-overlay">
-            <div className={`aed-window ${isMaximized ? 'maximized' : ''}`} onClick={e => e.stopPropagation()}>
+        <div className="aed-overlay" style={overlayStyle}>
+            <div className={windowClass} style={windowStyle} onClick={e => e.stopPropagation()}>
                 <div className="aed-container">
                     {/* Toolbar */}
                     <div className="aed-toolbar">
@@ -335,15 +379,17 @@ const AbnormalEventDetail = ({ visible, onClose, record, isEditing: initialEditi
                                 </>
                             )}
                             <div className="aed-divider"></div>
-                            <ToolBtn iconOnly onClick={() => setIsMaximized(!isMaximized)}><i className={`ri-${isMaximized ? 'fullscreen-exit' : 'fullscreen'}-line`}></i></ToolBtn>
-                            <ToolBtn iconOnly onClick={onClose} className="close"><i className="ri-close-line"></i></ToolBtn>
+                            {!isModal && (
+                                <ToolBtn iconOnly onClick={() => setIsMaximized(!isMaximized)}><i className={`ri-${isMaximized ? 'fullscreen-exit' : 'fullscreen'}-line`}></i></ToolBtn>
+                            )}
+                            <ToolBtn iconOnly onClick={handleClose} className="close"><i className="ri-close-line"></i></ToolBtn>
                         </div>
                     </div>
 
                     <div className="aed-scroll-area">
                         <div className="aed-paper">
                             <div className="aed-header-row">
-                                <div style={{ width: '200px' }}>编号: <span className="aed-underline">{data.id}</span></div>
+                                <div style={{ width: '200px' }}>编号: <span className="aed-underline">{data.id || 'NEW-001'}</span></div>
                                 <div className="aed-header-title">异常事件处理单</div>
                                 <div style={{ width: '200px', textAlign: 'right' }}>
                                     <div>版本: A/1</div>
@@ -398,7 +444,7 @@ const AbnormalEventDetail = ({ visible, onClose, record, isEditing: initialEditi
 
                                 <Cell span={6} style={{ padding: '8px', minHeight: '80px', position: 'relative' }}>
                                     <Label>异常描述:</Label>
-                                    <TextArea value={data.desc} rows={3} section="discovery" onChange={v => handleFieldChange('desc', v)} {...commonProps} />
+                                    <TextArea value={data.desc || data.description} rows={3} section="discovery" onChange={v => handleFieldChange('desc', v)} {...commonProps} />
                                     <SectionAttachment sectionKey="discovery" isEditing={isEditing && checkCanEdit('discovery')} onUploadClick={handleSectionUpload} files={fileList} />
                                 </Cell>
 
@@ -536,8 +582,6 @@ const AbnormalEventDetail = ({ visible, onClose, record, isEditing: initialEditi
             </div>
 
             {/* --- Modals --- */}
-
-            {/* [Updated] 改用新的组件名 */}
             <ProcessSubmitModal
                 visible={processModalVisible}
                 record={data}
@@ -569,7 +613,7 @@ const AbnormalEventDetail = ({ visible, onClose, record, isEditing: initialEditi
 };
 
 // =============================================================================
-// 3. Helpers (Moved outside to prevent ReferenceError)
+// 3. Helpers
 // =============================================================================
 
 const getStatusLabel = (s) => ({ 'DRAFT': '草稿', 'PENDING_CONFIRM': '待初步确认', 'PENDING_QA_CONFIRM': '待品质确认', 'PENDING_CONTAINMENT': '待围堵', 'PENDING_ANALYSIS': '待根因分析', 'PENDING_VERIFY': '待效果验证', 'CLOSED': '已结案' }[s] || s);
