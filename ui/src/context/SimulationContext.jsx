@@ -1,137 +1,164 @@
 /**
  * @file: src/context/SimulationContext.jsx
- * @description: 模拟业务数据层 - 管理异常单据、生产记录及流程状态流转
- * @version: v1.0.0
+ * @version: v1.0.0 (Global State Init)
+ * @description: 模拟业务数据上下文
+ * 负责管理演示场景中的核心状态：异常单据流转、动态待办列表、全局弹窗控制。
+ * 实现了文档中定义的 Ticket 模型和跨角色待办分发逻辑。
+ * @lastModified: 2026-01-13 23:30:00
  */
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
+import { AppContext } from './AppContext';
 
 export const SimulationContext = createContext();
 
 export const SimulationProvider = ({ children }) => {
-    // --- 1. 模拟数据库 (State) ---
+    const { currentUser } = useContext(AppContext);
 
-    // A. 异常单据列表
-    const [abnormalTickets, setAbnormalTickets] = useState([
+    // --- 1. 全局弹窗状态管理 ---
+    // activeModal: 'standard-import' | 'production-entry' | 'ticket-process' | null
+    const [activeModal, setActiveModal] = useState(null);
+    const [modalData, setModalData] = useState(null); // 传递给弹窗的上下文数据
+
+    // --- 2. 模拟数据库：异常单据 (Tickets) ---
+    const [tickets, setTickets] = useState([
+        // 预置一条已流转到 QC 的单据，方便演示
         {
-            id: 'HC/R-23-1-45',
-            status: 'PENDING_CONFIRM', // 待确认
-            type: '工艺异常',
-            level: '轻微',
-            desc: '涂布头出胶不均，造成连续3米厚度超差',
+            id: 'HC/R-23-1-33',
+            status: 'PENDING_VERIFY',
             initiator: '张操作',
-            createTime: '2026-01-13 09:30',
-            // 流程节点数据
-            confirmData: null, // MGR 确认数据
-            analysisData: null, // PE 分析数据
-            verifyData: null    // QC 验证数据
-        },
-        {
-            id: 'HC/R-23-1-42',
-            status: 'PENDING_VERIFY', // 待验证
-            type: '质量异常',
-            level: '一般',
-            desc: '分切端面毛刺超标 > 0.5mm',
-            initiator: '李质检',
-            createTime: '2026-01-12 14:00',
-            confirmData: { user: '王经理', time: '2026-01-12 14:30', note: '已隔离不良品' },
-            analysisData: { user: '赵工艺', time: '2026-01-12 16:00', cause: '刀模磨损', solution: '更换刀模' },
-            verifyData: null
+            type: 'Quality',
+            description: '原材料 PET 基膜表面存在晶点，影响涂布外观。',
+            containment: '冻结该批次原料，切换备用供应商材料生产。 (王经理)',
+            rootCause: '供应商生产环境洁净度不足，导致异物混入。 (赵工艺)',
+            solution: '供应商已提交 8D 报告，并加装在线检测仪。 (赵工艺)',
+            logs: [
+                { role: 'OP', action: '发起', time: '2026-01-12 09:30' },
+                { role: 'MGR', action: '围堵', time: '2026-01-12 10:15' },
+                { role: 'PE', action: '分析', time: '2026-01-13 14:00' }
+            ]
         }
     ]);
 
-    // B. 生产记录
-    const [productionRecords, setProductionRecords] = useState([
-        { id: 1, machine: 'No.3 涂布机', speed: 45.2, temp: 120.5, tension: 25.0, time: '2026-01-13 09:00', user: '张操作' }
-    ]);
+    // --- 3. 模拟数据库：待办事项 (Todos) ---
+    // 根据角色动态生成，并随 ticket 状态变化而变化
+    const [todos, setTodos] = useState([]);
 
-    // C. 系统标准库状态
-    const [standardLibraryStatus, setStandardLibraryStatus] = useState({
-        coverage: 99.2, // 覆盖率
-        missing: ['HC-OCA-2026 FQC标准'] // 缺失项
-    });
+    // 初始化/重置待办数据
+    useEffect(() => {
+        if (!currentUser) return;
 
-    // --- 2. Action 方法 (模拟 API 调用) ---
+        const role = currentUser.role;
+        let baseTodos = [];
 
-    // 发起异常
-    const createAbnormalTicket = (ticketData) => {
-        const newTicket = {
-            id: `HC/R-26-${Math.floor(Math.random() * 1000)}`,
-            status: 'PENDING_CONFIRM',
-            createTime: new Date().toLocaleString(),
-            ...ticketData
-        };
-        setAbnormalTickets(prev => [newTicket, ...prev]);
-        return newTicket;
+        // 3.1 基于文档规划的初始待办
+        if (role === 'ADM') {
+            baseTodos = [
+                { id: 'ADM-01', title: '导入新版《进料检验标准》V2.0', type: 'task', status: 'pending', action: 'standard-import' },
+                { id: 'ADM-02', title: '新员工账号开通申请', type: 'approval', status: 'pending' }
+            ];
+        } else if (role === 'OP') {
+            baseTodos = [
+                { id: 'OP-01', title: '10:00 节点工艺参数查录', type: 'record', status: 'pending', action: 'production-entry' },
+                { id: 'OP-02', title: '涂布头清洁度检查 (SOP要求)', type: 'check', status: 'pending' }
+            ];
+        } else if (role === 'MGR') {
+            baseTodos = [
+                { id: 'MGR-01', title: 'HC-Film-T92 试产方案审批', type: 'approval', status: 'pending' }
+            ];
+        } else if (role === 'PE') {
+            baseTodos = [
+                { id: 'PE-01', title: 'RTO 蓄热体清理保养', type: 'maintenance', status: 'pending' }
+            ];
+        } else if (role === 'QC') {
+            baseTodos = [
+                { id: 'QC-01', title: '工单 WO-20260113 首件确认', type: 'check', status: 'pending' }
+            ];
+        }
+
+        // 3.2 将 Tickets 映射为待办
+        const ticketTodos = tickets.map(t => {
+            // 逻辑：根据 Ticket 状态分发给不同角色
+            if (t.status === 'PENDING_CONFIRM' && role === 'MGR') {
+                return { id: `T-CONFIRM-${t.id}`, title: `异常初步确认: ${t.description.substring(0, 10)}...`, type: 'abnormal', status: 'pending', action: 'ticket-process', data: t };
+            }
+            if (t.status === 'PENDING_ANALYSIS' && (role === 'PE' || role === 'EQ')) {
+                return { id: `T-ANALYZE-${t.id}`, title: `异常根因分析: ${t.id}`, type: 'abnormal', status: 'pending', action: 'ticket-process', data: t };
+            }
+            if (t.status === 'PENDING_VERIFY' && role === 'QC') {
+                return { id: `T-VERIFY-${t.id}`, title: `纠正措施效果验证: ${t.id}`, type: 'abnormal', status: 'pending', action: 'ticket-process', data: t };
+            }
+            return null;
+        }).filter(Boolean);
+
+        setTodos([...baseTodos, ...ticketTodos]);
+
+    }, [currentUser, tickets]);
+
+    // --- 4. 核心 Action：打开功能弹窗 ---
+    const openModal = (type, data = null) => {
+        setModalData(data);
+        setActiveModal(type);
     };
 
-    // 推进流程 (MGR确认 -> PE分析 -> QC验证)
-    const updateTicketFlow = (ticketId, actionType, payload) => {
-        setAbnormalTickets(prev => prev.map(ticket => {
-            if (ticket.id !== ticketId) return ticket;
+    const closeModal = () => {
+        setActiveModal(null);
+        setModalData(null);
+    };
 
-            let updates = {};
-            switch (actionType) {
-                case 'CONFIRM': // MGR 确认
-                    updates = {
-                        status: 'PENDING_ANALYSIS',
-                        confirmData: { ...payload, time: new Date().toLocaleString() }
-                    };
-                    break;
-                case 'ANALYZE': // PE 分析
-                    updates = {
-                        status: 'PENDING_VERIFY',
-                        analysisData: { ...payload, time: new Date().toLocaleString() }
-                    };
-                    break;
-                case 'VERIFY': // QC 验证
-                    updates = {
-                        status: 'CLOSED',
-                        verifyData: { ...payload, time: new Date().toLocaleString() }
-                    };
-                    break;
-                default:
-                    break;
+    // --- 5. 业务逻辑 Action ---
+
+    // [OP] 发起异常
+    const createTicket = (newTicket) => {
+        const ticket = {
+            ...newTicket,
+            id: `HC/R-26-${Math.floor(Math.random() * 1000)}`,
+            status: 'PENDING_CONFIRM',
+            initiator: currentUser.name,
+            logs: [{ role: 'OP', action: '发起', time: new Date().toLocaleString() }]
+        };
+        setTickets(prev => [ticket, ...prev]);
+        return ticket;
+    };
+
+    // [MGR/PE/QC] 更新单据流转
+    const updateTicket = (ticketId, updates, nextStatus) => {
+        setTickets(prev => prev.map(t => {
+            if (t.id === ticketId) {
+                return {
+                    ...t,
+                    ...updates,
+                    status: nextStatus,
+                    logs: [...t.logs, { role: currentUser.role, action: getActionName(nextStatus), time: new Date().toLocaleString() }]
+                };
             }
-            return { ...ticket, ...updates };
+            return t;
         }));
     };
 
-    // 提交生产记录
-    const addProductionRecord = (record) => {
-        setProductionRecords(prev => [{ id: Date.now(), ...record, time: new Date().toLocaleString() }, ...prev]);
+    const getActionName = (status) => {
+        if (status === 'PENDING_ANALYSIS') return '确认&围堵';
+        if (status === 'PENDING_VERIFY') return '分析&对策';
+        if (status === 'CLOSED') return '验证&结案';
+        return '更新';
     };
 
-    // 导入标准 (IT场景)
+    // [IT] 导入标准
     const importStandard = () => {
-        setStandardLibraryStatus({
-            coverage: 100,
-            missing: []
-        });
-    };
-
-    // --- 3. 辅助查询 ---
-
-    // 获取当前角色的待办数
-    const getTodoCount = (role) => {
-        if (role === 'MGR') return abnormalTickets.filter(t => t.status === 'PENDING_CONFIRM').length;
-        if (role === 'PE' || role === 'EQ') return abnormalTickets.filter(t => t.status === 'PENDING_ANALYSIS').length;
-        if (role === 'QC') return abnormalTickets.filter(t => t.status === 'PENDING_VERIFY').length;
-        return 0;
-    };
-
-    const value = {
-        abnormalTickets,
-        productionRecords,
-        standardLibraryStatus,
-        createAbnormalTicket,
-        updateTicketFlow,
-        addProductionRecord,
-        importStandard,
-        getTodoCount
+        // 模拟耗时，然后移除 ADM 的待办
+        setTimeout(() => {
+            setTodos(prev => prev.filter(t => t.id !== 'ADM-01'));
+            alert("导入成功！标准库已更新。");
+            closeModal();
+        }, 1000);
     };
 
     return (
-        <SimulationContext.Provider value={value}>
+        <SimulationContext.Provider value={{
+            tickets, todos,
+            activeModal, modalData,
+            openModal, closeModal,
+            createTicket, updateTicket, importStandard
+        }}>
             {children}
         </SimulationContext.Provider>
     );
