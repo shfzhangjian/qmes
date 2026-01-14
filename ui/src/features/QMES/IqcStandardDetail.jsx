@@ -374,20 +374,106 @@ const IqcStandardDetail = (props) => {
 
                 {/* Drawers */}
                 <div className={`iqs-history-drawer ${showHistoryDrawer ? 'open' : ''}`}>
-                    <div className="drawer-header"><span className="drawer-title">版本历史记录</span><i className="ri-close-line icon-btn" onClick={() => setShowHistoryDrawer(false)}></i></div>
+                    <div className="drawer-header">
+                        <span className="drawer-title"><i className="ri-history-line"></i> 版本演变 ({historyList.length})</span>
+                        <i className="ri-close-line icon-btn" onClick={() => setShowHistoryDrawer(false)}></i>
+                    </div>
+                    {/* 在 IqcStandardDetail.jsx 的 Drawer Body 中替换内容 */}
+
                     <div className="drawer-body">
-                        {historyList.map(h=>(
-                            <div key={h.id} className="history-item">
-                                <div className="h-ver">{h.ver}</div><div className="h-date">{h.updateTime}</div>
-                                <div className="h-user">{h.updater}</div><div className="h-remark">{h.remark}</div>
-                                <button className="h-btn" onClick={()=>handlePreviewHistory(h)}>预览此版本</button>
-                            </div>
-                        ))}
+                        {historyList.length === 0 && <div className="empty-state">暂无历史版本</div>}
+
+                        {historyList.map((h) => {
+                            const isActive = h.id === activeHistoryId;
+
+                            return (
+                                <div key={h.id} className={`history-card ${isActive ? 'active' : ''}`}>
+                                    {/* 头部：版本 + 图标 */}
+                                    <div className="hc-header">
+                                        <span className="hc-ver">{h.ver}</span>
+                                        {/* 根据状态显示不同图标：正在预览显示眼睛，否则显示历史时钟 */}
+                                        <i
+                                            className={`hc-status-icon ${isActive ? 'ri-eye-line' : 'ri-history-line'}`}
+                                            title={isActive ? "正在预览当前版本" : "历史归档版本"}
+                                        ></i>
+                                    </div>
+
+                                    {/* 信息行 */}
+                                    <div className="hc-meta-row">
+                                        <div className="hc-user">
+                                            <i className="ri-user-smile-line" style={{color:'#1890ff'}}></i>
+                                            {h.updater}
+                                        </div>
+                                        <div className="hc-date">
+                                            <i className="ri-calendar-2-line"></i>
+                                            {h.updateTime}
+                                        </div>
+                                    </div>
+
+                                    {/* 备注 */}
+                                    <div className="hc-remark">
+                                        {h.remark ? h.remark : <span style={{color:'#ccc', fontStyle:'italic'}}>无备注</span>}
+                                    </div>
+
+                                    {/* 按钮 */}
+                                    <button className="hc-btn" onClick={() => handlePreviewHistory(h)}>
+                                        {isActive ? (
+                                            <><i className="ri-eye-fill"></i> 正在预览</>
+                                        ) : (
+                                            <><i className="ri-time-line"></i> 切换至此版本</>
+                                        )}
+                                    </button>
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
+
+                {/* ---------------- 修改后的附件抽屉 ---------------- */}
                 <div className={`iqs-attachment-drawer ${showAttachmentDrawer ? 'open' : ''}`}>
-                    <div className="drawer-header"><span className="drawer-title">附件 ({fileList.length})</span><i className="ri-close-line icon-btn" onClick={() => setShowAttachmentDrawer(false)}></i></div>
-                    <div className="drawer-body">{fileList.map((f,i)=><div key={i}>{f.name}</div>)}</div>
+                    <div className="drawer-header">
+        <span className="drawer-title">
+            <i className="ri-attachment-2"></i> 关联附件 ({fileList.length})
+        </span>
+                        <div style={{display:'flex', gap:'10px'}}>
+                            {/* 模拟上传按钮 */}
+                            {isEditable && (
+                                <button className="mini-btn primary" onClick={() => setUploadModalVisible(true)}>
+                                    <i className="ri-upload-2-fill"></i> 上传新文件
+                                </button>
+                            )}
+                            <i className="ri-close-line icon-btn" onClick={() => setShowAttachmentDrawer(false)}></i>
+                        </div>
+                    </div>
+                    <div className="drawer-body">
+                        {fileList.length === 0 ? (
+                            <div className="empty-state">
+                                <i className="ri-folder-open-line"></i>
+                                <span>当前标准暂无关联技术文档</span>
+                            </div>
+                        ) : (
+                            <div className="iqs-file-grid">
+                                {fileList.map((f, i) => {
+                                    // 简单的文件类型判断逻辑
+                                    const isPdf = f.name && f.name.toLowerCase().endsWith('pdf');
+                                    const isImg = f.name && f.name.match(/\.(jpeg|jpg|png|gif)$/i);
+                                    let iconClass = 'ri-file-text-fill';
+                                    if(isPdf) iconClass = 'ri-file-pdf-fill';
+                                    if(isImg) iconClass = 'ri-image-fill';
+
+                                    return (
+                                        <div key={i} className="iqs-file-card" onClick={() => alert(`预览文件: ${f.name}`)}>
+                                            <i className={`${iconClass} file-icon`}></i>
+                                            <div className="file-name" title={f.name}>{f.name}</div>
+                                            <div className="file-meta">
+                                                {f.size || 'Unknown Size'}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
             <UploadModal visible={uploadModalVisible} onClose={() => setUploadModalVisible(false)} onUploadSuccess={()=>{}} />
