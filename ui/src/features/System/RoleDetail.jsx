@@ -3,8 +3,9 @@
  * @description: 角色与权限配置详情
  * - [Update] 使用递归组件渲染无限层级菜单权限树
  * - [Feature] 支持折叠/展开，支持父子级联选择
+ * - [Feature] 新增菜单权限搜索过滤和只显示已选功能
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import BaseModal from '../../components/Common/BaseModal';
 import menuData from '../../data/menu.json'; // 引入真实菜单配置
 import '../../styles/sys-comm-detail.css'; // 引用公共详情样式
@@ -13,23 +14,21 @@ import './RoleDetail.css';
 // --- 递归树节点组件 ---
 const PermissionTreeNode = ({ node, level = 0, checkedKeys, onCheck, onExpand, expandedKeys }) => {
     // 构造当前节点的唯一 Key (优先用 path，没有则用 id)
-    // 注意：menu.json 里有些节点没有 path，需要用 id 或组合键
     const nodeKey = node.path || node.id;
 
     // 判断当前节点状态
     const isChecked = checkedKeys.includes(nodeKey);
-    // 简单的半选逻辑：如果有子节点，且子节点部分被选中 (这里暂简化为全选/不选，高级半选需复杂计算)
-    // 实际项目中通常需要计算 indeterminate 状态
 
     // 是否展开
     const isExpanded = expandedKeys.includes(nodeKey);
-    const hasChildren = (node.groups && node.groups.length > 0) || (node.items && node.items.length > 0) || (node.children && node.children.length > 0);
 
-    // 统一子节点列表
+    // 动态获取子节点（适配不同层级的字段名）
     let children = [];
-    if (node.groups) children = node.groups; // Level 1 -> 2
-    else if (node.items) children = node.items; // Level 2 -> 3
-    else if (node.children) children = node.children; // Level 3 -> 4+ (如果有)
+    if (node.groups && node.groups.length > 0) children = node.groups;
+    else if (node.items && node.items.length > 0) children = node.items;
+    else if (node.children && node.children.length > 0) children = node.children;
+
+    const hasChildren = children.length > 0;
 
     // 处理勾选
     const handleCheck = () => {
@@ -97,9 +96,31 @@ const PermissionTreeNode = ({ node, level = 0, checkedKeys, onCheck, onExpand, e
     );
 };
 
+// --- 开关组件 ---
+const ToggleSwitch = ({ checked, onChange, label }) => (
+    <div
+        style={{display:'flex', alignItems:'center', gap:'8px', cursor:'pointer', userSelect:'none'}}
+        onClick={() => onChange(!checked)}
+    >
+        <div style={{
+            width:'36px', height:'18px', borderRadius:'9px',
+            background: checked ? '#1890ff' : '#ccc',
+            position:'relative', transition:'all 0.2s'
+        }}>
+            <div style={{
+                width:'14px', height:'14px', borderRadius:'50%', background:'#fff',
+                position:'absolute', top:'2px', left: checked ? '20px' : '2px', transition:'all 0.2s'
+            }}></div>
+        </div>
+        <span style={{fontSize:'12px', color:'#666'}}>{label}</span>
+    </div>
+);
+
 const RoleDetail = ({ visible, record, onClose, onSubmit }) => {
     const [formData, setFormData] = useState({});
     const [expandedKeys, setExpandedKeys] = useState([]); // 控制树的展开
+    const [filterKeyword, setFilterKeyword] = useState(''); // 搜索关键词
+    const [showCheckedOnly, setShowCheckedOnly] = useState(false); // 只显示已选
 
     useEffect(() => {
         if (visible) {
@@ -109,6 +130,8 @@ const RoleDetail = ({ visible, record, onClose, onSubmit }) => {
             } : {
                 code: '', name: '', category: '系统管理', desc: '', status: '启用', permissions: []
             });
+            setFilterKeyword('');
+            setShowCheckedOnly(false);
 
             // 默认展开第一层
             const rootKeys = menuData.menu.map(m => m.id);
@@ -119,8 +142,6 @@ const RoleDetail = ({ visible, record, onClose, onSubmit }) => {
     const handleChange = (field, value) => setFormData(prev => ({ ...prev, [field]: value }));
 
     // --- 树操作逻辑 ---
-
-    // 切换展开/收缩
     const handleExpand = (key) => {
         if (expandedKeys.includes(key)) {
             setExpandedKeys(prev => prev.filter(k => k !== key));
@@ -129,24 +150,84 @@ const RoleDetail = ({ visible, record, onClose, onSubmit }) => {
         }
     };
 
-    // 切换勾选 (级联)
     const handleCheckNode = (nodeKey, allChildKeys, isChecking) => {
         const currentPerms = formData.permissions || [];
         let newPerms;
-
-        // 当前节点 + 所有子节点
-        const keysToToggle = [nodeKey, ...allChildKeys].filter(k => k); // 过滤空值
-
+        const keysToToggle = [nodeKey, ...allChildKeys].filter(k => k);
         if (isChecking) {
-            // 选中：合并去重
             newPerms = [...new Set([...currentPerms, ...keysToToggle])];
         } else {
-            // 取消选中：移除这些 key
             newPerms = currentPerms.filter(p => !keysToToggle.includes(p));
         }
-
         handleChange('permissions', newPerms);
     };
+
+    // --- 过滤逻辑 ---
+    const filteredMenuData = useMemo(() => {
+        // 递归过滤函数
+        const filterNodes = (nodes) => {
+            return nodes.map(node => {
+                // 确定子节点字段
+                let childField = 'children';
+                if (node.groups) childField = 'groups';
+                else if (node.items) childField = 'items';
+
+                const children = node[childField] || [];
+                const filteredChildren = filterNodes(children);
+
+                // 匹配条件
+                const name = node.title || node.label || node.name || '';
+                const key = node.path || node.id;
+
+                // 1. 关键词匹配
+                const matchesKeyword = !filterKeyword || name.toLowerCase().includes(filterKeyword.toLowerCase());
+
+                // 2. 已选匹配 (如果是"只显示已选"模式)
+                const isChecked = (formData.permissions || []).includes(key);
+                const hasVisibleChildren = filteredChildren.length > 0;
+
+                // 节点可见性判断：
+                // A. 如果只显示已选：(自己被选中 OR 有被选中的子节点) AND (关键词匹配逻辑)
+                //    但通常逻辑是：(满足关键词 OR 子节点满足) AND (满足已选 OR 子节点满足)
+
+                // 简化逻辑：
+                // 节点保留条件：(有可见子节点) OR (自身同时满足所有过滤条件)
+
+                let isSelfVisible = true;
+
+                // 检查关键词
+                if (filterKeyword && !matchesKeyword) isSelfVisible = false;
+
+                // 检查已选
+                if (showCheckedOnly && !isChecked) isSelfVisible = false;
+
+                if (isSelfVisible || hasVisibleChildren) {
+                    // 如果是因为子节点可见而保留父节点，或者自身可见
+                    return { ...node, [childField]: filteredChildren };
+                }
+                return null;
+            }).filter(Boolean);
+        };
+
+        const result = filterNodes(menuData.menu);
+        return result;
+    }, [formData.permissions, filterKeyword, showCheckedOnly]);
+
+    // 当过滤条件变化时，自动展开所有可见节点
+    useEffect(() => {
+        if (filterKeyword || showCheckedOnly) {
+            const getAllKeys = (nodes) => {
+                let keys = [];
+                nodes.forEach(n => {
+                    keys.push(n.path || n.id);
+                    const children = n.groups || n.items || n.children;
+                    if (children) keys = keys.concat(getAllKeys(children));
+                });
+                return keys;
+            };
+            setExpandedKeys(getAllKeys(filteredMenuData));
+        }
+    }, [filteredMenuData, filterKeyword, showCheckedOnly]);
 
     return (
         <BaseModal
@@ -162,7 +243,7 @@ const RoleDetail = ({ visible, record, onClose, onSubmit }) => {
             }
         >
             <div style={{padding:'10px 20px'}}>
-                {/* 角色基本信息 (保持不变) */}
+                {/* 角色基本信息 */}
                 <div className="form-grid-2">
                     <div className="form-item">
                         <label className="required">角色名称</label>
@@ -195,26 +276,49 @@ const RoleDetail = ({ visible, record, onClose, onSubmit }) => {
                     <input className="std-input" value={formData.desc || ''} onChange={e => handleChange('desc', e.target.value)} />
                 </div>
 
-                {/* 递归权限树 */}
+                {/* 权限树区域 */}
                 <div className="form-item">
-                    <label style={{marginBottom:'8px', display:'flex', justifyContent:'space-between', alignItems:'center'}}>
-                        <span style={{fontWeight:'bold'}}>菜单访问权限</span>
-                        <span style={{fontWeight:'normal', color:'#999', fontSize:'12px'}}>
-                            (已选: {(formData.permissions || []).length})
-                        </span>
-                    </label>
-                    <div className="role-perm-tree-wrapper">
-                        {menuData.menu.map(mod => (
-                            <PermissionTreeNode
-                                key={mod.id}
-                                node={mod}
-                                level={0}
-                                checkedKeys={formData.permissions || []}
-                                onCheck={handleCheckNode}
-                                onExpand={handleExpand}
-                                expandedKeys={expandedKeys}
+                    <div style={{marginBottom:'8px', display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+                        <div style={{display:'flex', alignItems:'center', gap:'8px'}}>
+                            <span style={{fontWeight:'bold'}}>菜单访问权限</span>
+                            <span style={{fontWeight:'normal', color:'#999', fontSize:'12px'}}>
+                                (已选: {(formData.permissions || []).length})
+                            </span>
+                        </div>
+                        {/* 过滤工具栏 */}
+                        <div style={{display:'flex', gap:'15px', alignItems:'center'}}>
+                            <input
+                                className="std-input"
+                                placeholder="输入菜单名称过滤..."
+                                value={filterKeyword}
+                                onChange={e => setFilterKeyword(e.target.value)}
+                                style={{width:'180px', height:'28px', fontSize:'12px'}}
                             />
-                        ))}
+                            <ToggleSwitch
+                                label="只显示已选"
+                                checked={showCheckedOnly}
+                                onChange={setShowCheckedOnly}
+                            />
+                        </div>
+                    </div>
+                    <div className="role-perm-tree-wrapper">
+                        {filteredMenuData.length > 0 ? (
+                            filteredMenuData.map(mod => (
+                                <PermissionTreeNode
+                                    key={mod.id}
+                                    node={mod}
+                                    level={0}
+                                    checkedKeys={formData.permissions || []}
+                                    onCheck={handleCheckNode}
+                                    onExpand={handleExpand}
+                                    expandedKeys={expandedKeys}
+                                />
+                            ))
+                        ) : (
+                            <div style={{padding:'20px', textAlign:'center', color:'#999', fontSize:'13px'}}>
+                                未找到匹配的菜单项
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
