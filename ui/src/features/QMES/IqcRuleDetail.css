@@ -1,0 +1,314 @@
+/**
+ * @file: src/features/QMES/IqcRuleDetail.css
+ * @description: 检验规则详情页样式
+ * - Reference: AbnormalEventDetail.css (Strict Compliance)
+ */
+
+/* --- 1. 弹窗容器 (Window) --- */
+.iqr-window {
+    background-color: #fff;
+    width: 900px;
+    height: 85vh;
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.iqr-window.maximized {
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+    top: 0 !important;
+    left: 0 !important;
+    transform: none !important;
+}
+
+/* 预览模式横幅 */
+.iqs-preview-banner {
+    background-color: #fffbe6;
+    border-bottom: 1px solid #ffe58f;
+    padding: 8px 24px;
+    color: #856404;
+    font-size: 13px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+}
+.iqs-preview-banner .exit-link {
+    color: #1890ff;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+/* --- 2. 顶部工具栏 (Toolbar) --- */
+.iqr-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    background-color: #fff;
+    border-bottom: 1px solid #e8e8e8;
+    flex-shrink: 0;
+    height: 56px;
+    z-index: 10;
+}
+
+.iqr-toolbar-left, .iqr-toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.iqr-icon {
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, #1890ff, #096dd9);
+    color: #fff;
+    border-radius: 6px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 18px;
+}
+
+.iqr-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+}
+
+.iqr-status-tag {
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+    border: 1px solid transparent;
+}
+.iqr-status-tag.success { background: #f6ffed; color: #52c41a; border-color: #b7eb8f; }
+.iqr-status-tag.disabled { background: #f5f5f5; color: #999; border-color: #d9d9d9; }
+
+.iqr-version-tag {
+    font-family: 'Consolas', monospace;
+    background: #f0f2f5;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #595959;
+    border: 1px solid #d9d9d9;
+}
+
+.iqr-divider {
+    width: 1px;
+    height: 24px;
+    background: #e8e8e8;
+    margin: 0 4px;
+}
+
+/* 按钮样式 */
+.iqr-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 0 16px;
+    height: 32px;
+    border: 1px solid #d9d9d9;
+    background: #fff;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #595959;
+    transition: all 0.2s;
+}
+
+.iqr-btn:hover { color: #1890ff; border-color: #1890ff; background-color: #f0f7ff; }
+.iqr-btn.primary { background: #1890ff; color: #fff; border: none; }
+.iqr-btn.primary:hover { background: #40a9ff; }
+.iqr-btn.icon-only { width: 32px; padding: 0; font-size: 16px; }
+.iqr-btn.close:hover { background: #ff4d4f; color: #fff; border-color: #ff4d4f; }
+.iqr-btn.active { color: #1890ff; background: #e6f7ff; border-color: #1890ff; }
+
+/* --- 3. 内容主体 (Body) --- */
+.iqr-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    background: #f5f7fa;
+    padding-bottom: 24px;
+    transition: background-color 0.3s;
+}
+
+/* 区域卡片 (Section) */
+.iqr-section {
+    background: #fff;
+    margin: 16px 24px 0 24px;
+    border: 1px solid #e8e8e8;
+    border-radius: 4px;
+    padding: 20px;
+    flex-shrink: 0;
+    transition: background-color 0.3s;
+}
+
+.iqr-section.empty-state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #999;
+    padding: 40px;
+}
+.iqr-section.empty-state i { font-size: 48px; color: #52c41a; margin-bottom: 10px; }
+
+.section-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 16px;
+    padding-left: 8px;
+    border-left: 3px solid #1890ff;
+    line-height: 1;
+}
+
+/* 表单布局 */
+.form-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px 24px;
+}
+
+.form-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-item label {
+    font-size: 12px;
+    color: #666;
+    font-weight: 500;
+}
+
+.form-item .std-input {
+    width: 100%;
+    height: 32px;
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+    padding: 0 10px;
+    font-size: 13px;
+    transition: all 0.2s;
+}
+.form-item .std-input:focus { border-color: #1890ff; box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1); outline: none; }
+.form-item .std-input:disabled { background: #f5f5f5; color: #999; }
+
+/* --- 4. 表格区域 --- */
+.iqr-table-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    margin: 16px 24px 0 24px;
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.iqr-tabs { display: flex; border-bottom: 1px solid #e8e8e8; background: #fafafa; }
+.iqr-tab { padding: 10px 24px; cursor: pointer; font-size: 13px; color: #666; border-bottom: 2px solid transparent; transition: all 0.2s; font-weight: 500; }
+.iqr-tab:hover { color: #1890ff; }
+.iqr-tab.active { color: #1890ff; border-bottom-color: #1890ff; background: #fff; }
+
+.iqr-table-wrapper { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.section-header { padding: 10px 16px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: #fff; }
+.section-header span { font-weight: 600; color: #333; font-size: 13px; }
+
+.table-scroll { flex: 1; overflow: auto; background: #fff; }
+.sub-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; }
+.sub-table th { background: #fafafa; padding: 10px 12px; border-bottom: 1px solid #e8e8e8; border-right: 1px solid #f0f0f0; text-align: left; font-weight: 600; color: #595959; position: sticky; top: 0; z-index: 5; white-space: nowrap; }
+.sub-table td { padding: 0; border-bottom: 1px solid #f0f0f0; border-right: 1px solid #f0f0f0; height: 36px; color: #333; transition: background 0.2s; vertical-align: middle; }
+.sub-table tr:hover td { background-color: #f0f7ff; }
+
+.cell-input { width: 100%; height: 100%; border: none; background: transparent; padding: 0 10px; font-size: 13px; outline: none; }
+.cell-input:focus { background: #fff; box-shadow: inset 0 0 0 2px #1890ff; }
+.cell-input.center { text-align: center; }
+.sub-table th.center, .sub-table td.center { text-align: center; }
+
+/* 历史版本抽屉 */
+.iqr-history-drawer {
+    position: absolute;
+    top: 0;
+    right: -320px;
+    width: 320px;
+    height: 100%;
+    background-color: #fff;
+    border-left: 1px solid #e8e8e8;
+    box-shadow: -4px 0 16px rgba(0,0,0,0.1);
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    transition: right 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.iqr-history-drawer.visible { right: 0; }
+
+.drawer-header {
+    height: 56px;
+    padding: 0 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+    background: #fafafa;
+}
+.drawer-title { font-weight: 600; color: #333; font-size: 14px; }
+.close-icon { cursor: pointer; color: #999; }
+.close-icon:hover { color: #ff4d4f; }
+
+.drawer-body { flex: 1; overflow-y: auto; padding: 16px; background: #fcfcfc; }
+.history-card {
+    background: #fff; border: 1px solid #e8e8e8; border-radius: 6px; padding: 12px; margin-bottom: 12px;
+    cursor: pointer; transition: all 0.2s;
+}
+.history-card:hover { border-color: #1890ff; box-shadow: 0 2px 8px rgba(24, 144, 255, 0.1); }
+.history-card.active { border-color: #1890ff; background-color: #e6f7ff; }
+
+.hc-header { display: flex; justify-content: space-between; margin-bottom: 8px; }
+.hc-ver { font-weight: bold; color: #1890ff; font-family: monospace; }
+.hc-date { font-size: 11px; color: #999; }
+.hc-meta { font-size: 12px; color: #666; margin-bottom: 4px; }
+.hc-remark { font-size: 12px; color: #8c8c8c; font-style: italic; }
+
+.mini-btn { padding: 4px 10px; border-radius: 3px; font-size: 12px; cursor: pointer; border: 1px solid #d9d9d9; background: #fff; }
+.mini-btn:hover { color: #1890ff; border-color: #1890ff; }
+.mini-btn.primary { background: #1890ff; color: #fff; border-color: #1890ff; }
+.danger-icon { color: #ff4d4f; cursor: pointer; font-size: 16px; padding: 4px; border-radius: 4px; display: inline-block; }
+.danger-icon:hover { background: #fff1f0; }
+
+.text-gray { color: #ccc; font-style: italic; }
+
+/* 定比例表格 */
+.percent-rule-table { border: 1px solid #e8e8e8; border-radius: 4px; }
+.pr-header { display: grid; grid-template-columns: 120px 1fr 1fr; background: #fafafa; padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #e8e8e8; color: #595959; font-size: 13px; }
+.pr-row { display: grid; grid-template-columns: 120px 1fr 1fr; padding: 10px 15px; border-bottom: 1px solid #f0f0f0; align-items: center; gap: 15px; }
+.pr-row:last-child { border-bottom: none; }
+.row-label { font-size: 13px; font-weight: 500; }
+.row-label.normal { color: #1890ff; }
+.row-label.reduced { color: #52c41a; }
+.row-label.tightened { color: #faad14; }
+
+
+
+/* 逻辑规则编辑器样式 */
+.rule-editor-container { display: flex; flex-direction: column; gap: 8px; }
+.logic-block { background: #fcfcfc; border: 1px solid #f0f0f0; padding: 12px 16px; border-radius: 6px; }
+.logic-sentence { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #555; }
+.node { padding: 2px 8px; border-radius: 4px; font-weight: 600; font-size: 12px; }
+.node.normal { background: #e6f7ff; color: #1890ff; }
+.node.tightened { background: #fff1f0; color: #ff4d4f; }
+.node.reduced { background: #f6ffed; color: #52c41a; }
+.logic-input { width: 50px; height: 26px; border: 1px solid #d9d9d9; border-radius: 4px; text-align: center; color: #1890ff; font-weight: bold; font-family: monospace; }

@@ -1,0 +1,285 @@
+/**
+ * @file: src/features/QMES/IqcRuleDetail.css
+ * @description: 检验规则详情页样式
+ * - Reference: AbnormalEventDetail.css
+ */
+
+/* --- 1. 弹窗容器 (Window) --- */
+.iqr-form-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 0; /* Remove default padding to allow full-width toolbars/tables */
+    overflow: hidden;
+    background-color: #fff;
+}
+
+/* 头部表单区域 */
+.iqr-header {
+    padding: 20px 24px;
+    background-color: #fff;
+    border-bottom: 1px solid #e8e8e8;
+    flex-shrink: 0;
+}
+
+/* 基础网格布局 */
+.form-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px 24px;
+    padding: 20px 24px;
+    background: #fff;
+}
+
+.form-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-item label {
+    font-size: 13px;
+    color: #666;
+    font-weight: 500;
+}
+
+.form-item .std-input {
+    /* 保持与其他模块一致的输入框样式 */
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+    padding: 5px 10px;
+    font-size: 13px;
+    transition: all 0.3s;
+}
+.form-item .std-input:focus {
+    border-color: #1890ff;
+    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+/* --- 2. Tabs 切换 --- */
+.iqr-tabs-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: #f5f7fa; /* 灰色背景区分 Tab 内容区 */
+    padding: 16px 24px;
+    overflow: hidden;
+}
+
+.iqr-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 0; /* Tab 内容直接紧贴 */
+}
+
+.iqr-tab {
+    padding: 8px 24px;
+    background: #e6e6e6;
+    color: #666;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 6px 6px 0 0;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+}
+
+.iqr-tab:hover {
+    color: #1890ff;
+    background: #efefef;
+}
+
+.iqr-tab.active {
+    background: #fff;
+    color: #1890ff;
+    border-color: #e8e8e8;
+    border-bottom-color: #fff;
+    box-shadow: 0 -2px 6px rgba(0,0,0,0.02);
+}
+
+/* --- 3. 表格区域 (Table) --- */
+/* 模拟 AbnormalEventDetail 的表格风格 */
+
+.iqr-table-wrapper {
+    background: #fff;
+    border-radius: 0 4px 4px 4px;
+    border: 1px solid #e8e8e8;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.02);
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+}
+
+.section-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid #e8e8e8;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff;
+}
+
+.section-header span {
+    font-weight: 600;
+    font-size: 14px;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.section-header span::before {
+    content: '';
+    display: inline-block;
+    width: 3px;
+    height: 14px;
+    background: #1890ff;
+    border-radius: 2px;
+}
+
+.table-scroll {
+    flex: 1;
+    overflow: auto;
+    padding: 0; /* 表格贴边 */
+}
+
+.sub-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.sub-table th {
+    background: #fafafa;
+    color: #595959;
+    font-weight: 600;
+    padding: 10px 12px;
+    border-bottom: 1px solid #e8e8e8;
+    border-right: 1px solid #f0f0f0;
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.sub-table td {
+    padding: 0; /* 单元格 padding 交给 input */
+    border-bottom: 1px solid #e8e8e8;
+    border-right: 1px solid #f0f0f0;
+    height: 36px;
+}
+
+.sub-table tr:last-child td {
+    border-bottom: none;
+}
+
+.sub-table tr:hover td {
+    background-color: #fefefe;
+}
+
+/* 表格内输入框 - 全填满风格 */
+.cell-input {
+    width: 100%;
+    height: 36px;
+    border: none;
+    outline: none;
+    background: transparent;
+    padding: 0 12px;
+    font-size: 13px;
+    color: #333;
+    transition: background 0.2s;
+}
+
+.cell-input:focus {
+    background: #e6f7ff;
+    box-shadow: inset 0 0 0 1px #1890ff; /* 内阴影模拟边框 */
+}
+
+.cell-input.center {
+    text-align: center;
+}
+
+.sub-table td.center {
+    text-align: center;
+}
+
+/* 操作图标 */
+.danger-icon {
+    color: #ff4d4f;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 6px;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+.danger-icon:hover {
+    background: #fff1f0;
+}
+
+/* --- 4. 转移规则 / 日志面板 (Info Panel) --- */
+.iqr-transfer-rule {
+    margin: 16px 24px 24px 24px;
+    background: #fffbe6;
+    border: 1px solid #ffe58f;
+    border-radius: 4px;
+    padding: 16px;
+    flex-shrink: 0;
+}
+
+.iqr-transfer-rule .rule-title {
+    font-weight: 600;
+    font-size: 13px;
+    color: #fa8c16;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.rule-box {
+    background: #fff;
+    border: 1px dashed #d9d9d9;
+    padding: 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #666;
+    line-height: 1.5;
+}
+.rule-box strong {
+    color: #333;
+    display: block;
+    margin-bottom: 4px;
+}
+
+/* --- 5. 按钮样式 --- */
+.iqr-btn {
+    /* 与 ToolBtn 配合 */
+    padding: 5px 12px;
+    border: 1px solid #d9d9d9;
+    background: #fff;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s;
+}
+.iqr-btn:hover {
+    color: #1890ff;
+    border-color: #1890ff;
+}
+
+.mini-btn {
+    padding: 4px 12px;
+    border-radius: 3px;
+    font-size: 12px;
+    cursor: pointer;
+    border: 1px solid #d9d9d9;
+    background: #fff;
+}
+.mini-btn.primary {
+    background: #1890ff;
+    color: #fff;
+    border-color: #1890ff;
+}
+.mini-btn.primary:hover {
+    background: #40a9ff;
+}

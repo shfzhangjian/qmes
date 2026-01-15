@@ -23,4 +23,7 @@ export default {
     '/qms/iqc/record': load(() => import('./IqcRecordList.jsx')),
 
     '/qms/iqc/record/detail/:id': load(() => import('./IqcRecordDetail.jsx')),
+
+    '/qms/iqc/rule': load(() => import('./IqcRuleList.jsx')),
+    '/qms/iqc/issue': load(() => import('./DefectDefinitionList.jsx')), // 假设缺陷定义暂未开发
 };

@@ -16,4 +16,12 @@ export default {
 
     // 5. 生产日历与班次
     '/production/base/calendar': load(() => import('./WorkCalendar.jsx')),
+
+    // 2. 产品信息档案 (新增)
+    '/production/base/produce': load(() => import('./ProductList.jsx')),
+
+    '/production/plan/order': load(() => import('./ProductionOrderList')), // 生产订单管理
+    '/production/plan/schedule': load(() => import('./ProductionPlanList')), // 生产计划排程
+
+    '/production/plan/exec': load(() => import('./WorkOrderExecution.jsx')), // 生产计划排程
 };

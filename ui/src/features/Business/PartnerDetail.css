@@ -1,0 +1,76 @@
+/**
+ * @file: src/features/Business/PartnerDetail.css
+ */
+
+.partner-detail-container {
+    padding: 0 20px 20px 20px;
+}
+
+/* 顶部信息卡 */
+.partner-header-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: #f5f7fa;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border: 1px solid #e8e8e8;
+}
+
+.ph-icon {
+    width: 48px;
+    height: 48px;
+    background: #fff;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    color: #1890ff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.ph-info {
+    flex: 1;
+}
+
+.ph-title {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 6px;
+}
+
+.ph-tags {
+    display: flex;
+    gap: 8px;
+}
+
+/* Tabs */
+.partner-tabs {
+    display: flex;
+    border-bottom: 1px solid #e8e8e8;
+    margin-bottom: 20px;
+}
+
+.pt-tab {
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #666;
+    border-bottom: 2px solid transparent;
+    transition: all 0.3s;
+}
+
+.pt-tab:hover { color: #1890ff; }
+
+.pt-tab.active {
+    color: #1890ff;
+    border-bottom-color: #1890ff;
+    font-weight: 500;
+}
+
+.partner-tab-content {
+    min-height: 250px;
+}

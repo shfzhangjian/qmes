@@ -80,8 +80,7 @@
         {
           "title": "通用档案",
           "items": [
-            { "label": "产品品牌管理", "roles": ["ADM", "SUPER_ADMIN"], "path": "", "icon": "ri-prohibited-line", "desc": "待开发" },
-            { "label": "客商信息档案", "roles": ["ADM", "SUPER_ADMIN"], "path": "", "icon": "ri-prohibited-line", "desc": "待开发" },
+            { "label": "客商信息档案", "roles": ["ADM", "SUPER_ADMIN"], "path": "/business/partner", "icon": "ri-prohibited-line", "desc": "待开发" },
             { "label": "计量单位配置", "roles": ["ADM", "SUPER_ADMIN"], "path": "", "icon": "ri-prohibited-line", "desc": "待开发" },
             { "label": "数据字典配置", "roles": ["ADM", "SUPER_ADMIN"], "path": "", "icon": "ri-prohibited-line", "desc": "待开发" },
             { "label": "编码生成规则", "roles": ["ADM", "SUPER_ADMIN"], "path": "", "icon": "ri-prohibited-line", "desc": "待开发" },
