@@ -1,22 +1,24 @@
 /**
  * @file: src/features/Production/FactoryModelList.jsx
- * @description: 工厂物理建模 (Factory Modeling)
- * - [行业特性] 支持半导体洁净室等级 (Class 100/1000)
- * - [结构] 树状表格展示: 工厂 -> 车间 -> 产线 -> 工位
+ * @description: 工厂物理建模 (Factory Modeling) - 树形表格增强版
+ * - [Update] 拆分详情弹窗到 FactoryModelDetail.jsx
+ * - [Update] 引入 FactoryModelDetail 组件
  */
 import React, { useState } from 'react';
 import PageLayout from '../../components/Common/PageLayout';
-import BaseModal from '../../components/Common/BaseModal';
-import SmartForm from '../../components/Common/SmartForm'; // 引入搜索表单
-import './production.css'; // 引入专用样式
+import SmartForm from '../../components/Common/SmartForm';
+import FactoryModelDetail from './FactoryModelDetail'; // 引入独立详情组件
+import './FactoryModelList.css'; // 复用系统组织架构的树形表格样式
 
 const FactoryModelList = () => {
     // --- 状态管理 ---
     const [queryParams, setQueryParams] = useState({ keyword: '', type: '' });
     const [modalVisible, setModalVisible] = useState(false);
-    const [currentNode, setCurrentNode] = useState(null);
+    const [currentRecord, setCurrentRecord] = useState(null);
+    const [parentNode, setParentNode] = useState(null); // 新增：记录父节点信息
+    const [expandedRowKeys, setExpandedRowKeys] = useState(['FAC-SZ01', 'WS-PUR-01', 'WS-CAST-02']);
 
-    // --- 模拟数据：模拟某半导体材料工厂结构 ---
+    // --- 模拟数据 ---
     const [treeData, setTreeData] = useState([
         {
             id: 'FAC-SZ01', name: '禾臣新材料(苏州)工厂', type: '工厂', env: '普通', status: '正常', manager: '张厂长',
@@ -24,22 +26,42 @@ const FactoryModelList = () => {
                 {
                     id: 'WS-PUR-01', name: '配料合成车间', type: '车间', env: 'Class 10000', manager: '李主任',
                     children: [
-                        { id: 'LINE-PRE-A', name: '预聚体合成线 A', type: '产线', equipCount: 5, status: '运行中' },
-                        { id: 'LINE-PRE-B', name: '预聚体合成线 B', type: '产线', equipCount: 5, status: '维护中' }
+                        {
+                            id: 'LINE-PRE-A', name: '预聚体合成线 A', type: '产线', equipCount: 5, status: '运行中',
+                            children: [
+                                { id: 'ST-MIX-A1', name: '预混工位 A1', type: '工位', status: '正常' },
+                                { id: 'ST-REACT-A2', name: '反应工位 A2', type: '工位', status: '正常' }
+                            ]
+                        },
+                        {
+                            id: 'LINE-PRE-B', name: '预聚体合成线 B', type: '产线', equipCount: 5, status: '维护中',
+                            children: []
+                        }
                     ]
                 },
                 {
                     id: 'WS-CAST-02', name: '精密成型车间', type: '车间', env: 'Class 1000', manager: '王主任',
                     children: [
-                        { id: 'LINE-CAST-01', name: '抛光垫浇注线 01', type: '产线', equipCount: 8, status: '运行中' },
-                        { id: 'LINE-CAST-02', name: '抛光垫浇注线 02', type: '产线', equipCount: 8, status: '运行中' }
+                        {
+                            id: 'LINE-CAST-01', name: '抛光垫浇注线 01', type: '产线', equipCount: 8, status: '运行中',
+                            children: [
+                                { id: 'ST-MOLD-01', name: '模具准备工位', type: '工位', status: '正常' },
+                                { id: 'ST-POUR-01', name: '浇注工位', type: '工位', status: '正常' },
+                                { id: 'ST-OVEN-01', name: '固化炉 A', type: '工位', status: '正常' }
+                            ]
+                        },
+                        {
+                            id: 'LINE-CAST-02', name: '抛光垫浇注线 02', type: '产线', equipCount: 8, status: '运行中', children: []
+                        },
+                        { id: 'LINE-CAST-03', name: '抛光垫浇注线 03 (备用)', type: '产线', equipCount: 8, status: '停用', children: [] }
                     ]
                 },
                 {
                     id: 'WS-POST-03', name: '后道加工车间', type: '车间', env: 'Class 100', manager: '赵主任',
                     children: [
-                        { id: 'LINE-CNC-01', name: '精密开槽线', type: '产线', equipCount: 12, status: '运行中' },
-                        { id: 'LINE-LAM-01', name: '无尘贴合/清洗线', type: '产线', equipCount: 6, status: '运行中' }
+                        { id: 'LINE-CNC-01', name: '精密开槽线', type: '产线', equipCount: 12, status: '运行中', children: [] },
+                        { id: 'LINE-LAM-01', name: '无尘贴合/清洗线', type: '产线', equipCount: 6, status: '运行中', children: [] },
+                        { id: 'LINE-PACK-01', name: '洁净包装线', type: '产线', equipCount: 4, status: '运行中', children: [] }
                     ]
                 }
             ]
@@ -49,70 +71,143 @@ const FactoryModelList = () => {
             children: [
                 {
                     id: 'WS-MSK-01', name: '光刻车间', type: '车间', env: 'Class 10', manager: '吴博士',
-                    children: []
-                }
+                    children: [
+                        { id: 'LINE-LITHO-01', name: '光刻线 01', type: '产线', equipCount: 3, status: '调试', children: [] },
+                        { id: 'LINE-ETCH-01', name: '蚀刻线 01', type: '产线', equipCount: 2, status: '调试', children: [] }
+                    ]
+                },
+                { id: 'WS-TEST-01', name: '检测中心', type: '车间', env: 'Class 100', manager: '郑经理', children: [] }
             ]
         }
     ]);
 
-    // --- 递归渲染树表格行 ---
-    const renderRows = (nodes, level = 0) => {
-        return nodes.map(node => (
-            <React.Fragment key={node.id}>
-                <tr style={{background: level === 0 ? '#fafafa' : '#fff'}}>
-                    <td style={{paddingLeft: '15px'}}>
-                        <div style={{display:'flex', alignItems:'center'}}>
-                            <span style={{width: `${level * 24}px`, display:'inline-block'}}></span>
-                            {level > 0 && <span style={{color:'#ccc', marginRight:'4px'}}>└─</span>}
-                            <i className={`ri-${node.type==='工厂'?'building':(node.type==='车间'?'community':(node.type==='产线'?'node-tree':'macbook'))}-line tree-node-icon`}></i>
-                            <span style={{fontWeight: node.type==='工厂'?'bold':'normal'}}>{node.name}</span>
-                        </div>
-                    </td>
-                    <td><span style={{fontFamily:'monospace', color:'#666'}}>{node.id}</span></td>
-                    <td>
-                        <span className={`q-tag ${node.type==='工厂'?'primary':(node.type==='车间'?'purple':'warning')}`}>{node.type}</span>
-                    </td>
-                    <td>
-                        {/* 洁净度高亮显示 */}
-                        {node.env && node.env.includes('Class') ?
-                            <span className="q-tag success">{node.env}</span> :
-                            <span style={{color:'#999'}}>{node.env || '-'}</span>
-                        }
-                    </td>
-                    <td>{node.manager || '-'}</td>
-                    <td>{node.equipCount ? `${node.equipCount} 台` : '-'}</td>
-                    <td>
-                        <span style={{color: node.status==='维护中'?'#faad14':'#52c41a', fontWeight:'bold'}}>
-                            ● {node.status}
-                        </span>
-                    </td>
-                    <td>
-                        <div style={{display:'flex', gap:'8px'}}>
-                            <button className="small-btn outline" onClick={()=>handleEdit(node)}>编辑</button>
-                            {node.type !== '产线' && <button className="small-btn outline" style={{color:'#1890ff'}} onClick={()=>handleAdd(node)}>+ 下级</button>}
-                        </div>
-                    </td>
-                </tr>
-                {node.children && node.children.length > 0 && renderRows(node.children, level + 1)}
-            </React.Fragment>
-        ));
+    // --- 辅助函数：查找父节点 ---
+    // 为了在编辑时也能显示上级信息，简单实现一个查找逻辑
+    const findParentNode = (nodes, targetId, parent = null) => {
+        for (const node of nodes) {
+            if (node.id === targetId) return parent;
+            if (node.children && node.children.length > 0) {
+                const found = findParentNode(node.children, targetId, node);
+                if (found) return found;
+            }
+        }
+        return null;
     };
 
-    const handleEdit = (node) => { setCurrentNode(node); setModalVisible(true); };
-    const handleAdd = (parentNode) => {
-        setCurrentNode({ parentId: parentNode.id, parentName: parentNode.name, type: getNextType(parentNode.type) });
+    // --- 交互逻辑 ---
+    const handleExpand = (id) => {
+        const keys = [...expandedRowKeys];
+        const index = keys.indexOf(id);
+        if (index > -1) {
+            keys.splice(index, 1);
+        } else {
+            keys.push(id);
+        }
+        setExpandedRowKeys(keys);
+    };
+
+    const handleEdit = (node) => {
+        const parent = findParentNode(treeData, node.id);
+        setCurrentRecord(node);
+        setParentNode(parent);
         setModalVisible(true);
     };
 
-    const getNextType = (type) => {
-        if(type === '工厂') return '车间';
-        if(type === '车间') return '产线';
-        return '工位';
+    const handleAdd = (parent) => {
+        setCurrentRecord(null);
+        setParentNode(parent);
+        setModalVisible(true);
+    };
+
+    const handleSubmit = (data) => {
+        console.log('保存工厂模型:', data);
+        setModalVisible(false);
+        // 这里应添加实际的数据更新逻辑
+    };
+
+    // --- 递归渲染表格行 ---
+    const renderRows = (nodes, level = 0) => {
+        return nodes.map(node => {
+            const hasChildren = node.children && node.children.length > 0;
+            const isExpanded = expandedRowKeys.includes(node.id);
+            const indentSize = 24;
+
+            // 类型配置
+            const typeConfig = {
+                '工厂': { icon: 'building-2-fill', color: 'primary' },
+                '车间': { icon: 'community-line', color: 'purple' },
+                '产线': { icon: 'node-tree', color: 'warning' },
+                '工位': { icon: 'macbook-line', color: 'default' }
+            };
+            const typeInfo = typeConfig[node.type] || { icon: 'file-line', color: 'default' };
+
+            return (
+                <React.Fragment key={node.id}>
+                    <tr className={`org-row level-${level} ${isExpanded ? 'expanded' : ''}`}>
+                        {/* 树形名称列 */}
+                        <td className="org-name-cell">
+                            <div style={{ paddingLeft: `${level * indentSize + 10}px` }} className="org-name-wrapper">
+                                {/* 展开/收缩图标 */}
+                                {hasChildren ? (
+                                    <span
+                                        className={`expand-icon ${isExpanded ? 'open' : ''}`}
+                                        onClick={() => handleExpand(node.id)}
+                                    >
+                                        <i className="ri-arrow-right-s-fill"></i>
+                                    </span>
+                                ) : (
+                                    <span className="expand-placeholder"></span>
+                                )}
+
+                                {/* 节点类型图标 */}
+                                <i className={`node-type-icon ri-${typeInfo.icon}`} style={{color: node.type==='工位'?'#999':'#1890ff'}}></i>
+
+                                <span className="node-name">{node.name}</span>
+                            </div>
+                        </td>
+
+                        <td><span className="code-text">{node.id}</span></td>
+
+                        <td className="center">
+                            <span className={`q-tag ${typeInfo.color}`}>{node.type}</span>
+                        </td>
+
+                        {/* 洁净度高亮 */}
+                        <td>
+                            {node.env && node.env.includes('Class') ?
+                                <span className="q-tag success" style={{fontSize:'11px'}}>{node.env}</span> :
+                                <span style={{color:'#999'}}>{node.env || '-'}</span>
+                            }
+                        </td>
+
+                        <td>{node.manager || '-'}</td>
+                        <td className="center">{node.equipCount ? `${node.equipCount}` : '-'}</td>
+
+                        <td className="center">
+                            <span className={`status-badge ${node.status==='正常'||node.status==='运行中' ? 'success' : (node.status==='维护中'?'warning':'disabled')}`}>
+                                {node.status}
+                            </span>
+                        </td>
+
+                        <td>
+                            <div className="action-group nowrap">
+                                <button className="mini-btn" onClick={()=>handleEdit(node)}>编辑</button>
+                                {node.type !== '工位' && (
+                                    <button className="mini-btn primary" onClick={()=>handleAdd(node)}>+下级</button>
+                                )}
+                                <button className="mini-btn danger">删</button>
+                            </div>
+                        </td>
+                    </tr>
+                    {/* 递归渲染子节点 */}
+                    {hasChildren && isExpanded && renderRows(node.children, level + 1)}
+                </React.Fragment>
+            );
+        });
     };
 
     return (
         <PageLayout
-            // 1. 添加搜索表单
             searchForm={
                 <SmartForm
                     fields={[
@@ -121,78 +216,51 @@ const FactoryModelList = () => {
                     ]}
                     data={queryParams}
                     onChange={(k, v) => setQueryParams({ ...queryParams, [k]: v })}
-                    columns={4} // 保持一行显示
+                    columns={4}
                 />
             }
-            // 2. 更新工具栏：添加面包屑和主按钮
             toolbar={
                 <>
                     <div style={{ fontWeight: 'bold' }}>生产基础 &gt; 工厂建模</div>
-                    <button className="btn btn-primary" onClick={()=>handleAdd({id:'ROOT', name:'ROOT', type:'ROOT'})}>
-                        <i className="ri-add-line"></i> 新建工厂
-                    </button>
+                    <div style={{display:'flex', gap:'10px'}}>
+                        <button className="btn outline" onClick={() => setExpandedRowKeys([])}>全部折叠</button>
+                        <button className="btn btn-primary" onClick={()=>handleAdd(null)}>
+                            <i className="ri-add-line"></i> 新建工厂
+                        </button>
+                    </div>
                 </>
             }
         >
-            <div className="q-table-container" style={{padding:'0', border:'none'}}>
-                <table className="q-table" style={{borderLeft:'1px solid #eee', borderRight:'1px solid #eee'}}>
-                    <thead>
-                    <tr>
-                        <th style={{width:'320px', paddingLeft:'20px'}}>组织名称</th>
-                        <th>编码</th>
-                        <th>类型</th>
-                        <th>环境等级 (洁净度)</th>
-                        <th>负责人</th>
-                        <th>关联设备</th>
-                        <th>状态</th>
-                        <th style={{width:'180px'}}>操作</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {renderRows(treeData)}
-                    </tbody>
-                </table>
+            <div className="org-table-wrapper">
+                <div className="org-table-scroll">
+                    <table className="org-table">
+                        <thead>
+                        <tr>
+                            <th style={{width:'320px', paddingLeft:'40px'}}>组织名称</th>
+                            <th style={{width:'150px'}}>编码</th>
+                            <th style={{width:'80px'}} className="center">类型</th>
+                            <th style={{width:'150px'}}>环境等级 (洁净度)</th>
+                            <th style={{width:'100px'}}>负责人</th>
+                            <th style={{width:'80px'}} className="center">设备数</th>
+                            <th style={{width:'100px'}} className="center">状态</th>
+                            <th style={{width:'160px'}}>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {renderRows(treeData)}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
-            {/* 编辑/新增弹窗 */}
-            <BaseModal
+            {/* 独立的详情弹窗组件 */}
+            <FactoryModelDetail
                 visible={modalVisible}
-                title={currentNode?.id ? "编辑节点信息" : `新增节点 (上级: ${currentNode?.parentName || '根节点'})`}
-                onClose={()=>setModalVisible(false)}
-                width="600px"
-            >
-                <div className="form-item" style={{marginBottom:'15px'}}>
-                    <label className="required">节点类型</label>
-                    <select className="std-input" defaultValue={currentNode?.type}>
-                        <option>工厂</option><option>车间</option><option>产线</option><option>工位</option>
-                    </select>
-                </div>
-                <div className="form-item" style={{marginBottom:'15px'}}>
-                    <label className="required">节点名称</label>
-                    <input className="std-input" defaultValue={currentNode?.name} placeholder="请输入名称，如：精密成型车间" />
-                </div>
-                <div className="form-item" style={{marginBottom:'15px'}}>
-                    <label className="required">节点编码</label>
-                    <input className="std-input" defaultValue={currentNode?.id} placeholder="请输入唯一编码" />
-                </div>
-                <div className="form-grid-2">
-                    <div className="form-item">
-                        <label>洁净度等级</label>
-                        <select className="std-input" defaultValue={currentNode?.env || '普通'}>
-                            <option>普通</option>
-                            <option>Class 100000 (十万级)</option>
-                            <option>Class 10000 (万级)</option>
-                            <option>Class 1000 (千级)</option>
-                            <option>Class 100 (百级)</option>
-                            <option>Class 10 (十级)</option>
-                        </select>
-                    </div>
-                    <div className="form-item">
-                        <label>负责人</label>
-                        <input className="std-input" defaultValue={currentNode?.manager} />
-                    </div>
-                </div>
-            </BaseModal>
+                record={currentRecord}
+                parentNode={parentNode}
+                onClose={() => setModalVisible(false)}
+                onSubmit={handleSubmit}
+            />
         </PageLayout>
     );
 };

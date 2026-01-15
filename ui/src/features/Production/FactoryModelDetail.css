@@ -1,0 +1,31 @@
+/**
+ * @file: src/features/Production/FactoryModelDetail.css
+ * @description: 工厂建模详情页样式
+ */
+
+.fm-form-container {
+    padding: 10px 20px;
+}
+
+.fm-parent-info {
+    background-color: #f5f7fa;
+    padding: 10px 15px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    border: 1px dashed #d9d9d9;
+    color: #666;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.fm-parent-info i {
+    color: #1890ff;
+    font-size: 16px;
+}
+
+.fm-parent-info strong {
+    color: #333;
+    margin-left: 4px;
+}
