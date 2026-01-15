@@ -385,7 +385,7 @@ const App = () => {
                 </aside>
             </div>
 
-            {/* 5. 弹窗集成 */}
+            {/* 5. 弹窗集成2 */}
             <MockAbnormalEvent visible={modalType === 'ABNORMAL'} record={{ node: activeNode.name }} onClose={() => setModalType(null)} />
             <MockIqcRecord visible={modalType === 'QC'} record={{ node: activeNode.name }} onClose={() => setModalType(null)} onPass={() => handleQCResult(true)} onFail={() => handleQCResult(false)} />
             <MockNonConforming visible={modalType === 'NCR'} record={{ source: currentWO.id }} onClose={() => setModalType(null)} />
