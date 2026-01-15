@@ -1,0 +1,83 @@
+/**
+ * @file: src/features/System/MenuDetail.css
+ * @description: 系统菜单定义详情样式
+ */
+
+/* 上级信息提示条 (参考 OrgDetail) */
+.menu-parent-info {
+    background-color: #f5f7fa;
+    padding: 10px 15px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    border: 1px dashed #d9d9d9;
+    color: #666;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.menu-parent-info i {
+    color: #1890ff;
+    font-size: 16px;
+}
+
+.menu-parent-info strong {
+    color: #333;
+}
+
+/* 复用基础网格布局 */
+.form-grid-1 {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+}
+
+/* 图标预览区域 */
+.icon-preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: #f5f5f5;
+    border-radius: 4px;
+    border: 1px solid #d9d9d9;
+    color: #666;
+    flex-shrink: 0;
+}
+
+/* 角色标签容器 */
+.role-tags-container {
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+    padding: 8px;
+    min-height: 38px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    background: #fff;
+}
+
+/* 角色标签 */
+.role-tag {
+    display: inline-flex;
+    align-items: center;
+    background: #e6f7ff;
+    color: #1890ff;
+    border: 1px solid #91d5ff;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.role-tag i {
+    margin-left: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.role-tag i:hover {
+    color: #ff4d4f;
+}

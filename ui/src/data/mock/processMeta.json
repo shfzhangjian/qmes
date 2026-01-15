@@ -1,0 +1,94 @@
+{
+  "opDefs": [
+    { "id": 10, "opCode": "OP10", "opName": "原料预混 (Premix)", "type": "配料", "wc": "WC-MIX-01", "stdTime": 30 },
+    { "id": 20, "opCode": "OP20", "opName": "真空脱泡 (Degassing)", "type": "配料", "wc": "WC-VAC-01", "stdTime": 20 },
+    { "id": 30, "opCode": "OP30", "opName": "模具准备 (Mold Prep)", "type": "准备", "wc": "WC-MOLD-01", "stdTime": 15 },
+    { "id": 40, "opCode": "OP40", "opName": "离心浇注 (Casting)", "type": "成型", "wc": "WC-CAST-01", "stdTime": 45 },
+    { "id": 50, "opCode": "OP50", "opName": "高温固化 (Curing)", "type": "热处理", "wc": "WC-OVEN-01", "stdTime": 960 },
+    { "id": 60, "opCode": "OP60", "opName": "自然冷却 (Cooling)", "type": "热处理", "wc": "WC-COOL-01", "stdTime": 120 },
+    { "id": 70, "opCode": "OP70", "opName": "脱模取件 (Demolding)", "type": "成型", "wc": "WC-DEMOLD", "stdTime": 10 },
+    { "id": 80, "opCode": "OP80", "opName": "精密切片 (Slicing)", "type": "机加", "wc": "WC-SLICE-01", "stdTime": 25 },
+    { "id": 90, "opCode": "OP90", "opName": "表面开槽 (Grooving)", "type": "机加", "wc": "WC-CNC-01", "stdTime": 40 },
+    { "id": 100, "opCode": "OP100", "opName": "背胶贴合 (Laminating)", "type": "包装", "wc": "WC-LAM-01", "stdTime": 15 },
+    { "id": 110, "opCode": "OP110", "opName": "OQC终检 (Final QC)", "type": "质检", "wc": "WC-QC-01", "stdTime": 10 },
+    { "id": 120, "opCode": "OP120", "opName": "洁净包装 (Packing)", "type": "包装", "wc": "WC-PACK-01", "stdTime": 10 }
+  ],
+  "materialLib": [
+    { "code": "RM-ISO-001", "name": "异氰酸酯预聚体 (TDI)", "unit": "kg" },
+    { "code": "RM-POLY-002", "name": "聚醚多元醇 (PTMEG)", "unit": "kg" },
+    { "code": "RM-MOCA-003", "name": "MOCA固化剂 (颗粒)", "unit": "kg" },
+    { "code": "RM-EXP-004", "name": "Expancel微球发泡剂", "unit": "kg" },
+    { "code": "RM-SURF-005", "name": "表面活性剂 (L-580)", "unit": "L" },
+    { "code": "RM-CAT-006", "name": "有机锡催化剂 (T-12)", "unit": "g" },
+    { "code": "RM-PIG-007", "name": "色浆 (CMP专用白)", "unit": "kg" },
+    { "code": "UT-N2-008", "name": "高纯氮气 (99.999%)", "unit": "m³" },
+    { "code": "UT-IPA-009", "name": "异丙醇 (清洗用)", "unit": "L" },
+    { "code": "PKG-DRUM-010", "name": "200L不锈钢周转桶", "unit": "pcs" },
+    { "code": "LAB-FILTER-011", "name": "精密滤芯 (5μm)", "unit": "pcs" },
+    { "code": "PPE-GLOVE-012", "name": "丁腈手套", "unit": "pair" }
+  ],
+  "outputLib": [
+    { "code": "WIP-MAIN", "name": "主产品 (合格品)", "type": "半成品" },
+    { "code": "WIP-SAMP", "name": "制程巡检样件", "type": "样品" },
+    { "code": "WIP-RETAIN", "name": "留样 (追溯用)", "type": "样品" },
+    { "code": "WIP-RWE", "name": "返工品 (可回用)", "type": "半成品" },
+    { "code": "SCRAP-MAT", "name": "浇注余料", "type": "废料" },
+    { "code": "SCRAP-HEAD", "name": "料头/料尾", "type": "废料" },
+    { "code": "DATA-LOG", "name": "DCS过程数据包", "type": "虚拟资产" },
+    { "code": "WIP-NEXT", "name": "流转卡 (Lot Card)", "type": "辅材" },
+    { "code": "ENV-WASTE", "name": "清洗废液", "type": "危废" },
+    { "code": "QC-TEST", "name": "破坏性测试片", "type": "消耗品" }
+  ],
+  "qcLib": [
+    {
+      "id": "LIB-001", "category": "理化指标", "name": "反应温度", "stdCode": "Q/HC-GY-001",
+      "stdVal": "85±2", "stdUnit": "℃", "spc": true, "tool": "热电偶",
+      "method": "在线监测", "sample": "全检", "pos": "釜内", "freq": "实时", "judge": "自动判定"
+    },
+    {
+      "id": "LIB-002", "category": "设备参数", "name": "搅拌转速", "stdCode": "Q/HC-EQ-012",
+      "stdVal": "3500±100", "stdUnit": "rpm", "spc": true, "tool": "转速表",
+      "method": "在线监测", "sample": "全检", "pos": "搅拌轴", "freq": "实时", "judge": "CPK>1.33"
+    },
+    {
+      "id": "LIB-003", "category": "尺寸外观", "name": "厚度", "stdCode": "GB/T 1216",
+      "stdVal": "2.5±0.05", "stdUnit": "mm", "spc": true, "tool": "千分尺",
+      "method": "手动测量", "sample": "5pcs/批", "pos": "四角及中心", "freq": "每批", "judge": "ACC=0"
+    },
+    {
+      "id": "LIB-004", "category": "尺寸外观", "name": "槽深", "stdCode": "Q/HC-QC-005",
+      "stdVal": "0.5+0.05", "stdUnit": "mm", "spc": true, "tool": "深度规",
+      "method": "手动测量", "sample": "10pcs/批", "pos": "任意槽", "freq": "每批", "judge": "ACC=0"
+    },
+    {
+      "id": "LIB-005", "category": "理化指标", "name": "硬度(Shore D)", "stdCode": "ASTM D2240",
+      "stdVal": "55±3", "stdUnit": "D", "spc": false, "tool": "硬度计",
+      "method": "破坏性测试", "sample": "2pcs/批", "pos": "测试片", "freq": "每批", "judge": "Pass"
+    },
+    {
+      "id": "LIB-006", "category": "外观", "name": "表面气泡", "stdCode": "Q/HC-QC-008",
+      "stdVal": "无气泡", "stdUnit": "-", "spc": false, "tool": "目视",
+      "method": "目视检查", "sample": "全检", "pos": "工作面", "freq": "每片", "judge": "限度样"
+    },
+    {
+      "id": "LIB-007", "category": "理化指标", "name": "比重", "stdCode": "GB/T 1033.1",
+      "stdVal": "0.85±0.03", "stdUnit": "g/cm³", "spc": true, "tool": "比重计",
+      "method": "取样测试", "sample": "1次/班", "pos": "料罐", "freq": "每班", "judge": "范围"
+    },
+    {
+      "id": "LIB-008", "category": "包装", "name": "标签内容", "stdCode": "Q/HC-PK-001",
+      "stdVal": "信息正确", "stdUnit": "-", "spc": false, "tool": "目视",
+      "method": "核对", "sample": "全检", "pos": "外箱", "freq": "每箱", "judge": "OK/NG"
+    },
+    {
+      "id": "LIB-009", "category": "工艺参数", "name": "固化时间", "stdCode": "Q/HC-GY-020",
+      "stdVal": "16", "stdUnit": "h", "spc": false, "tool": "DCS系统",
+      "method": "自动记录", "sample": "全检", "pos": "-", "freq": "每炉", "judge": "±0.5h"
+    },
+    {
+      "id": "LIB-010", "category": "理化指标", "name": "表面粗糙度", "stdCode": "ISO 4287",
+      "stdVal": "Ra<0.5", "stdUnit": "μm", "spc": true, "tool": "粗糙度仪",
+      "method": "接触式", "sample": "3pcs/批", "pos": "中心", "freq": "每批", "judge": "Max"
+    }
+  ]
+}

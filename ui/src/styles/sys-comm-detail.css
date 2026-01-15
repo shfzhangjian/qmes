@@ -1,0 +1,96 @@
+/**
+ * @file: src/styles/sys-comm-detail.css
+ * @description: 系统管理模块详情页通用样式 (System Common Detail Styles)
+ * - 包含标准表单控件、网格布局、标签等
+ */
+
+/* =============================================================================
+   1. 基础表单控件 (Base Form Controls)
+   ============================================================================= */
+
+/* 标准输入框 */
+.std-input {
+    width: 100%;
+    height: 32px;
+    padding: 4px 11px;
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+    transition: all 0.3s;
+    font-size: 13px;
+    background: #fff;
+    box-sizing: border-box;
+    color: #333;
+}
+
+.std-input:focus {
+    border-color: #1890ff;
+    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+    outline: none;
+}
+
+.std-input:disabled, .std-input.disabled {
+    background: #f5f5f5;
+    color: rgba(0, 0, 0, 0.45);
+    cursor: not-allowed;
+    border-color: #d9d9d9;
+}
+
+/* 必填项红星 */
+.required::before {
+    display: inline-block;
+    margin-right: 4px;
+    color: #ff4d4f;
+    font-size: 14px;
+    font-family: SimSun, sans-serif;
+    line-height: 1;
+    content: '*';
+}
+
+/* --- 布局网格 --- */
+.form-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    padding: 10px 0;
+}
+
+.form-grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+    padding: 10px 0;
+}
+
+.form-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-item label {
+    font-size: 13px;
+    color: #333;
+    font-weight: 500;
+}
+
+/* =============================================================================
+   2. 通用组件样式 (Common Components)
+   ============================================================================= */
+
+/* --- 标签 (Tags) --- */
+.q-tag {
+    display: inline-block;
+    padding: 0 7px;
+    font-size: 12px;
+    line-height: 20px;
+    border-radius: 2px;
+    border: 1px solid #d9d9d9;
+    background: #fafafa;
+    color: rgba(0,0,0,.65);
+    white-space: nowrap;
+}
+.q-tag.primary { background: #e6f7ff; border-color: #91d5ff; color: #1890ff; }
+.q-tag.success { background: #f6ffed; border-color: #b7eb8f; color: #52c41a; }
+.q-tag.warning { background: #fffbe6; border-color: #ffe58f; color: #faad14; }
+.q-tag.danger  { background: #fff1f0; border-color: #ffa39e; color: #ff4d4f; }
+.q-tag.purple  { background: #f9f0ff; border-color: #d3adf7; color: #722ed1; }

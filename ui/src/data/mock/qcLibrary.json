@@ -1,0 +1,52 @@
+[
+  {
+    "id": "LIB-001", "category": "理化指标", "name": "反应温度", "stdCode": "Q/HC-GY-001",
+    "stdVal": "85±2", "stdUnit": "℃", "spc": true, "tool": "热电偶",
+    "method": "在线监测", "sample": "全检", "pos": "釜内", "freq": "实时", "judge": "自动判定"
+  },
+  {
+    "id": "LIB-002", "category": "设备参数", "name": "搅拌转速", "stdCode": "Q/HC-EQ-012",
+    "stdVal": "3500±100", "stdUnit": "rpm", "spc": true, "tool": "转速表",
+    "method": "在线监测", "sample": "全检", "pos": "搅拌轴", "freq": "实时", "judge": "CPK>1.33"
+  },
+  {
+    "id": "LIB-003", "category": "尺寸外观", "name": "厚度", "stdCode": "GB/T 1216",
+    "stdVal": "2.5±0.05", "stdUnit": "mm", "spc": true, "tool": "千分尺",
+    "method": "手动测量", "sample": "5pcs/批", "pos": "四角及中心", "freq": "每批", "judge": "ACC=0"
+  },
+  {
+    "id": "LIB-004", "category": "尺寸外观", "name": "槽深", "stdCode": "Q/HC-QC-005",
+    "stdVal": "0.5+0.05", "stdUnit": "mm", "spc": true, "tool": "深度规",
+    "method": "手动测量", "sample": "10pcs/批", "pos": "任意槽", "freq": "每批", "judge": "ACC=0"
+  },
+  {
+    "id": "LIB-005", "category": "理化指标", "name": "硬度(Shore D)", "stdCode": "ASTM D2240",
+    "stdVal": "55±3", "stdUnit": "D", "spc": false, "tool": "硬度计",
+    "method": "破坏性测试", "sample": "2pcs/批", "pos": "测试片", "freq": "每批", "judge": "Pass"
+  },
+  {
+    "id": "LIB-006", "category": "外观", "name": "表面气泡", "stdCode": "Q/HC-QC-008",
+    "stdVal": "无气泡", "stdUnit": "-", "spc": false, "tool": "目视",
+    "method": "目视检查", "sample": "全检", "pos": "工作面", "freq": "每片", "judge": "限度样"
+  },
+  {
+    "id": "LIB-007", "category": "理化指标", "name": "比重", "stdCode": "GB/T 1033.1",
+    "stdVal": "0.85±0.03", "stdUnit": "g/cm³", "spc": true, "tool": "比重计",
+    "method": "取样测试", "sample": "1次/班", "pos": "料罐", "freq": "每班", "judge": "范围"
+  },
+  {
+    "id": "LIB-008", "category": "包装", "name": "标签内容", "stdCode": "Q/HC-PK-001",
+    "stdVal": "信息正确", "stdUnit": "-", "spc": false, "tool": "目视",
+    "method": "核对", "sample": "全检", "pos": "外箱", "freq": "每箱", "judge": "OK/NG"
+  },
+  {
+    "id": "LIB-009", "category": "工艺参数", "name": "固化时间", "stdCode": "Q/HC-GY-020",
+    "stdVal": "16", "stdUnit": "h", "spc": false, "tool": "DCS系统",
+    "method": "自动记录", "sample": "全检", "pos": "-", "freq": "每炉", "judge": "±0.5h"
+  },
+  {
+    "id": "LIB-010", "category": "理化指标", "name": "表面粗糙度", "stdCode": "ISO 4287",
+    "stdVal": "Ra<0.5", "stdUnit": "μm", "spc": true, "tool": "粗糙度仪",
+    "method": "接触式", "sample": "3pcs/批", "pos": "中心", "freq": "每批", "judge": "Max"
+  }
+]

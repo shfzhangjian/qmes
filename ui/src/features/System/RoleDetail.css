@@ -1,0 +1,103 @@
+/**
+ * @file: src/features/System/RoleDetail.css
+ * @description: 角色详情样式 (递归树版)
+ */
+
+.role-perm-tree-wrapper {
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+    padding: 10px 0; /* padding 移到内部节点 */
+    height: 450px;
+    overflow-y: auto;
+    background: #fcfcfc;
+}
+
+/* 树节点行 */
+.perm-node-content {
+    display: flex;
+    align-items: center;
+    padding: 6px 0;
+    cursor: pointer;
+    transition: background 0.2s;
+    border-bottom: 1px solid transparent;
+}
+
+.perm-node-content:hover {
+    background-color: #f0f7ff;
+}
+
+/* 一级节点 (模块) 特殊样式 */
+.perm-node-content.level-0 {
+    background-color: #fafafa;
+    border-bottom: 1px solid #eee;
+    margin-top: 5px;
+    font-weight: 600;
+    color: #333;
+}
+.perm-node-content.level-0:first-child {
+    margin-top: 0;
+}
+
+/* 二级节点 (分组) */
+.perm-node-content.level-1 {
+    color: #555;
+    font-weight: 500;
+}
+
+/* 展开图标 */
+.perm-expand-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    margin-right: 4px;
+    color: #999;
+    transition: transform 0.2s;
+    cursor: pointer;
+}
+
+.perm-expand-icon.open {
+    transform: rotate(90deg);
+    color: #333;
+}
+
+.perm-expand-icon.hidden {
+    visibility: hidden;
+}
+
+/* 复选框区域 */
+.perm-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+    flex: 1;
+}
+
+.perm-checkbox-label input {
+    cursor: pointer;
+    width: 16px;
+    height: 16px;
+    accent-color: #1890ff;
+}
+
+/* 图标 */
+.perm-node-icon {
+    font-size: 16px;
+    color: #666;
+}
+
+.level-0 .perm-node-icon {
+    color: #1890ff;
+}
+
+.perm-node-title {
+    font-size: 13px;
+}
+
+/* 连接线效果 (可选) */
+/* .perm-tree-node {
+    position: relative;
+} */

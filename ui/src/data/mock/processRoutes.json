@@ -1,0 +1,91 @@
+[
+  {
+    "id": "PR-CMP-001",
+    "name": "12寸CMP抛光垫标准工艺",
+    "product": "PAD-CMP-300",
+    "productName": "12寸晶圆CMP抛光垫",
+    "version": "V1.2",
+    "status": "已发布",
+    "type": "量产工艺",
+    "updater": "张工艺",
+    "updateTime": "2026-01-10",
+    "nodes": [
+      {
+        "id": 10, "opCode": "OP10", "opName": "原料预混", "type": "配料", "wc": "WC-MIX-01", "stdTime": 30,
+        "materials": [
+          { "id": 1001, "code": "RM-ISO-001", "name": "异氰酸酯预聚体 (TDI)", "qty": 100, "unit": "kg" },
+          { "id": 1002, "code": "RM-POLY-002", "name": "聚醚多元醇 (PTMEG)", "qty": 50, "unit": "kg" }
+        ],
+        "outputs": [],
+        "qcStandards": [
+          { "id": 1001, "item": "反应温度", "type": "KPP", "target": "85", "upper": "87", "lower": "83", "unit": "℃", "tool": "热电偶", "freq": "实时" }
+        ]
+      },
+      {
+        "id": 40, "opCode": "OP40", "opName": "离心浇注", "type": "成型", "wc": "WC-CAST-01", "stdTime": 45,
+        "materials": [],
+        "outputs": [
+          { "id": 4001, "code": "WIP-CAKE", "name": "抛光垫毛坯(未固化)", "type": "半成品" },
+          { "id": 4002, "code": "SCRAP-MAT", "name": "浇注余料", "type": "废料" }
+        ],
+        "qcStandards": [
+          { "id": 4001, "item": "注料流量", "type": "KPP", "target": "500", "upper": "510", "lower": "490", "unit": "g/s", "tool": "流量计", "freq": "实时" },
+          { "id": 4002, "item": "搅拌转速", "type": "KPP", "target": "3500", "upper": "3600", "lower": "3400", "unit": "rpm", "tool": "转速表", "freq": "实时" }
+        ]
+      },
+      {
+        "id": 50, "opCode": "OP50", "opName": "高温固化", "type": "热处理", "wc": "WC-OVEN-01", "stdTime": 960,
+        "materials": [],
+        "outputs": [
+          { "id": 5001, "code": "WIP-CAKE-HARD", "name": "抛光垫毛坯(固化)", "type": "半成品" }
+        ],
+        "qcStandards": [
+          { "id": 5001, "item": "固化温度", "type": "KPP", "target": "110", "upper": "115", "lower": "105", "unit": "℃", "tool": "温控仪", "freq": "实时" },
+          { "id": 5002, "item": "固化时间", "type": "KPP", "target": "16", "upper": "16.5", "lower": "15.5", "unit": "h", "tool": "DCS", "freq": "每炉" }
+        ]
+      },
+      {
+        "id": 80, "opCode": "OP80", "opName": "精密切片", "type": "机加", "wc": "WC-SLICE-01", "stdTime": 25,
+        "materials": [],
+        "outputs": [
+          { "id": 8001, "code": "WIP-SLICE", "name": "抛光垫切片", "type": "半成品" }
+        ],
+        "qcStandards": [
+          { "id": 8001, "item": "厚度均匀性", "type": "KQC", "target": "2.5", "upper": "2.55", "lower": "2.45", "unit": "mm", "tool": "千分尺", "freq": "抽检" }
+        ]
+      },
+      {
+        "id": 90, "opCode": "OP90", "opName": "表面开槽", "type": "机加", "wc": "WC-CNC-01", "stdTime": 40,
+        "materials": [],
+        "outputs": [],
+        "qcStandards": [
+          { "id": 9001, "item": "槽深", "type": "KQC", "target": "0.5", "upper": "0.55", "lower": "0.45", "unit": "mm", "tool": "深度规", "freq": "全检" },
+          { "id": 9002, "item": "表面粗糙度", "type": "KQC", "target": "0.5", "upper": "0.8", "lower": "0.2", "unit": "Ra", "tool": "粗糙度仪", "freq": "抽检" }
+        ]
+      },
+      {
+        "id": 110, "opCode": "OP110", "opName": "OQC终检", "type": "质检", "wc": "WC-QC-01", "stdTime": 10,
+        "materials": [],
+        "outputs": [
+          { "id": 1101, "code": "FG-PAD", "name": "12寸CMP抛光垫", "type": "成品" }
+        ],
+        "qcStandards": [
+          { "id": 1101, "item": "外观气泡", "type": "KQC", "target": "0", "upper": "0", "lower": "0", "unit": "个", "tool": "目视", "freq": "全检" },
+          { "id": 1102, "item": "硬度 (Shore D)", "type": "KQC", "target": "55", "upper": "58", "lower": "52", "unit": "D", "tool": "硬度计", "freq": "首末检" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "PR-MSK-002",
+    "name": "空白掩膜版精抛工艺",
+    "product": "MSK-BLK-6025",
+    "productName": "6025空白掩膜版",
+    "version": "V1.0",
+    "status": "草稿",
+    "type": "试制工艺",
+    "updater": "李研发",
+    "updateTime": "2026-01-14",
+    "nodes": []
+  }
+]

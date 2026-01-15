@@ -1,0 +1,447 @@
+{
+  "systemConfig": {
+    "brandName": "禾臣新材料数字化智造协同一体化平台",
+    "logoPath": "/src/assets/logo.svg",
+    "version": "v4.1 Pro"
+  },
+  "menu": [
+    {
+      "id": "dashboard",
+      "title": "待办门户",
+      "icon": "ri-dashboard-3-line",
+      "roles": ["ALL"],
+      "groups": [],
+      "path": "/dashboard",
+      "desc": "个人工作台与待办事项汇总"
+    },
+    {
+      "id": "system_base",
+      "title": "系统基础",
+      "icon": "ri-settings-3-line",
+      "groups": [
+        {
+          "title": "组织架构",
+          "items": [
+            { "label": "部门管理", "roles": ["ADM"], "path": "/system/dept", "desc": "配置公司部门结构" },
+            { "label": "岗位管理", "roles": ["ADM"], "path": "/system/post", "desc": "配置岗位定义" }
+          ]
+        },
+        {
+          "title": "用户权限",
+          "items": [
+            { "label": "用户管理", "roles": ["ADM"], "path": "/system/user", "desc": "用户账号增删改查" },
+            { "label": "角色管理", "roles": ["ADM"], "path": "/system/role", "desc": "角色与权限分配" },
+            { "label": "菜单管理", "roles": ["ADM"], "path": "/system/menu", "desc": "系统菜单配置" }
+          ]
+        },
+        {
+          "title": "系统监控",
+          "items": [
+            { "label": "操作日志", "roles": ["ADM"], "path": "/system/log/oper", "desc": "敏感操作审计" },
+            { "label": "登录日志", "roles": ["ADM"], "path": "/system/log/login", "desc": "用户登录记录" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "flow_center",
+      "title": "流程中心",
+      "icon": "ri-flow-chart",
+      "groups": [
+        {
+          "title": "流程配置",
+          "items": [
+            { "label": "模型设计", "roles": ["ADM"], "path": "/flow/model", "desc": "审批流设计" }
+          ]
+        },
+        {
+          "title": "我的任务",
+          "items": [
+            { "label": "待办任务", "roles": ["ALL"], "path": "/flow/todo", "desc": "审批/办理工作流任务" },
+            { "label": "已办任务", "roles": ["ALL"], "path": "/flow/done", "desc": "历史审批记录查询" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "msg_center",
+      "title": "消息中心",
+      "icon": "ri-message-3-line",
+      "groups": [
+        {
+          "title": "消息配置",
+          "items": [
+            { "label": "消息模板", "roles": ["ADM"], "path": "/msg/template", "desc": "站内信/邮件模板配置" }
+          ]
+        },
+        {
+          "title": "消息列表",
+          "items": [
+            { "label": "我的消息", "roles": ["ALL"], "path": "/msg/list", "desc": "查看系统通知与公告" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mes_base",
+      "title": "MES基础",
+      "icon": "ri-database-2-line",
+      "groups": [
+        {
+          "title": "产品与工艺",
+          "items": [
+            { "label": "产品信息管理", "roles": ["MGR", "PE"], "path": "/mes/base/product", "desc": "物料主数据定义" },
+            { "label": "物料清单(BOM)", "roles": ["MGR", "PE"], "path": "/mes/base/bom", "desc": "产品结构版本管理" },
+            { "label": "工艺路线管理", "roles": ["MGR", "PE"], "path": "/mes/base/route", "desc": "工序流程定义" }
+          ]
+        },
+        {
+          "title": "Q-Time管理",
+          "items": [
+            { "label": "时限规则设定", "roles": ["MGR", "PE"], "path": "/mes/base/qtime", "desc": "工序间滞留时间限制" }
+          ]
+        },
+        {
+          "title": "资源管理",
+          "items": [
+            { "label": "设备台账", "roles": ["MGR", "EQ"], "path": "/mes/base/equip", "desc": "生产设备基础信息" },
+            { "label": "产线/工作站", "roles": ["MGR", "PE"], "path": "/mes/base/line", "desc": "物理位置与层级定义" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "wo_manage",
+      "title": "工单管理",
+      "icon": "ri-bill-line",
+      "groups": [
+        {
+          "title": "工单同步",
+          "items": [
+            { "label": "ERP工单同步", "roles": ["MGR"], "path": "/mes/wo/sync", "desc": "从ERP拉取生产计划" }
+          ]
+        },
+        {
+          "title": "工单操作",
+          "items": [
+            { "label": "工单列表", "roles": ["MGR", "OP"], "path": "/mes/wo/list", "desc": "下发/暂停/关闭工单" }
+          ]
+        },
+        {
+          "title": "执行跟踪",
+          "items": [
+            { "label": "工单状态看板", "roles": ["MGR", "CS"], "path": "/mes/wo/board", "desc": "实时生产进度监控" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "prod_exec",
+      "title": "生产执行",
+      "icon": "ri-hammer-line",
+      "groups": [
+        {
+          "title": "监控中心",
+          "items": [
+            { "label": "站点Lot看板", "roles": ["MGR", "OP"], "path": "/mes/exe/board", "desc": "工位在制品实时监控" }
+          ]
+        },
+        {
+          "title": "数据记录",
+          "items": [
+            { "label": "生产过站录入", "roles": ["OP"], "path": "/mes/exe/input", "desc": "扫描条码进行过站" },
+            { "label": "过站履历查询", "roles": ["MGR", "QC"], "path": "/mes/exe/history", "desc": "追溯产品生产历史" }
+          ]
+        },
+        {
+          "title": "拆批管理",
+          "items": [
+            { "label": "批次拆分", "roles": ["OP"], "path": "/mes/exe/split", "desc": "由于异常或工艺需要分批" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lot_manage",
+      "title": "批次管理",
+      "icon": "ri-barcode-box-line",
+      "groups": [
+        {
+          "title": "全流程跟踪",
+          "items": [
+            { "label": "Lot信息查询", "roles": ["ALL"], "path": "/mes/lot/search", "desc": "批次全生命周期追溯" }
+          ]
+        },
+        {
+          "title": "异常控制",
+          "items": [
+            { "label": "Lot锁定/解锁", "roles": ["QC", "MGR"], "path": "/mes/lot/lock", "desc": "冻结异常批次防止流转" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "param_conf",
+      "title": "工艺参数",
+      "icon": "ri-sound-module-line",
+      "groups": [
+        {
+          "title": "参数配置",
+          "items": [
+            { "label": "参数标准维护", "roles": ["PE"], "path": "/mes/param/conf", "desc": "机台工艺配方设定" }
+          ]
+        },
+        {
+          "title": "参数监控",
+          "items": [
+            { "label": "偏离告警记录", "roles": ["PE", "MGR"], "path": "/mes/param/alarm", "desc": "实时参数超差记录" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mes_report",
+      "title": "MES报表",
+      "icon": "ri-file-chart-line",
+      "groups": [
+        {
+          "title": "生产报表",
+          "items": [
+            { "label": "工单/工序报表", "roles": ["MGR"], "path": "/rpt/mes/prod", "desc": "产量与进度统计" }
+          ]
+        },
+        {
+          "title": "设备报表",
+          "items": [
+            { "label": "运行/告警报表", "roles": ["MGR", "EQ"], "path": "/rpt/mes/equip", "desc": "OEE与停机时间分析" }
+          ]
+        },
+        {
+          "title": "物料报表",
+          "items": [
+            { "label": "库存/消耗报表", "roles": ["MGR", "WH"], "path": "/rpt/mes/mat", "desc": "线边仓物料盘点" }
+          ]
+        },
+        {
+          "title": "COA管理",
+          "items": [
+            { "label": "COA生成与打印", "roles": ["QC"], "path": "/rpt/mes/coa", "desc": "质检报告自动生成" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "label_manage",
+      "title": "标签管理",
+      "icon": "ri-price-tag-3-line",
+      "groups": [
+        {
+          "title": "标签设计",
+          "items": [
+            { "label": "模板设计器", "roles": ["ADM", "PE"], "path": "/label/design", "desc": "自定义标签打印样式" }
+          ]
+        },
+        {
+          "title": "打印执行",
+          "items": [
+            { "label": "标签打印", "roles": ["OP"], "path": "/label/print", "desc": "在线补打/重打标签" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "shop_stock",
+      "title": "车间库存",
+      "icon": "ri-store-3-line",
+      "groups": [
+        {
+          "title": "库存统计",
+          "items": [
+            { "label": "成品/不良品库存", "roles": ["WH"], "path": "/inv/stock", "desc": "车间级库存查询" }
+          ]
+        },
+        {
+          "title": "联动管理",
+          "items": [
+            { "label": "入库同步日志", "roles": ["WH", "ADM"], "path": "/inv/log", "desc": "完工入库ERP同步状态" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "qms_base",
+      "title": "QMS基础",
+      "icon": "ri-shield-check-line",
+      "groups": [
+        {
+          "title": "标准定义",
+          "items": [
+            { "label": "检验标准管理", "roles": ["QC", "PE"], "path": "/qms/iqc/standard", "desc": "检验项目与指标定义" },
+            { "label": "缺陷库管理", "roles": ["QC"], "path": "/qms/base/defect", "desc": "不良现象代码维护" },
+            { "label": "抽样方案设置", "roles": ["QC"], "path": "/qms/base/sample", "desc": "AQL抽样水准" },
+            { "label": "单位换算配置", "roles": ["QC"], "path": "/qms/base/unit", "desc": "采购与检验单位转换" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "insp_manage",
+      "title": "检验管理",
+      "icon": "ri-microscope-line",
+      "groups": [
+        {
+          "title": "来料检验",
+          "items": [
+            { "label": "IQC检验单", "roles": ["QC"], "path": "/qms/iqc/record", "desc": "原材料检验录入" }
+          ]
+        },
+        {
+          "title": "过程检验",
+          "items": [
+            { "label": "IPQC检验单", "roles": ["QC"], "path": "/qms/ipqc/list", "desc": "首检/巡检录入" }
+          ]
+        },
+        {
+          "title": "成品检验",
+          "items": [
+            { "label": "FQC检验单", "roles": ["QC"], "path": "/qms/fqc/list", "desc": "成品终检录入" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "abnormal_manage",
+      "title": "异常管理",
+      "icon": "ri-alert-line",
+      "groups": [
+        {
+          "title": "不合格品",
+          "items": [
+            { "label": "NCR处置单", "roles": ["QC"], "path": "/qms/ncr/list", "desc": "不合格品评审与处置" }
+          ]
+        },
+        {
+          "title": "事故报告",
+          "items": [
+            { "label": "品质异常报告", "roles": ["QC"], "path": "/qms/abnormal", "desc": "异常事件记录" }
+          ]
+        },
+        {
+          "title": "8D管理",
+          "items": [
+            { "label": "8D报告", "roles": ["QC"], "path": "/qms/8d", "desc": "8D整改流程" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tech_change",
+      "title": "技术变更",
+      "icon": "ri-git-merge-line",
+      "groups": [
+        {
+          "title": "变更控制",
+          "items": [
+            { "label": "ECN变更申请", "roles": ["PE"], "path": "/qms/ecn/apply", "desc": "工艺/BOM变更发起" },
+            { "label": "变更记录查询", "roles": ["PE", "QC"], "path": "/qms/ecn/list", "desc": "变更历史追溯" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "gage_manage",
+      "title": "量检具",
+      "icon": "ri-ruler-2-line",
+      "groups": [
+        {
+          "title": "台账管理",
+          "items": [
+            { "label": "量检具台账", "roles": ["EQ"], "path": "/qms/gage/list", "desc": "计量器具生命周期" }
+          ]
+        },
+        {
+          "title": "校准管理",
+          "items": [
+            { "label": "校准计划/记录", "roles": ["EQ"], "path": "/qms/gage/cal", "desc": "定期校准与MSA" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "complaint_manage",
+      "title": "客诉管理",
+      "icon": "ri-customer-service-2-line",
+      "groups": [
+        {
+          "title": "投诉处理",
+          "items": [
+            { "label": "客诉登记", "roles": ["CS"], "path": "/qms/complaint", "desc": "客户反馈记录与跟进" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "supplier_manage",
+      "title": "供应商",
+      "icon": "ri-truck-line",
+      "groups": [
+        {
+          "title": "准入管理",
+          "items": [
+            { "label": "供应商档案/分级", "roles": ["SQE"], "path": "/srm/supplier", "desc": "供方资质与等级" }
+          ]
+        },
+        {
+          "title": "审核评价",
+          "items": [
+            { "label": "年度审核计划", "roles": ["SQE"], "path": "/srm/audit", "desc": "供应商稽核管理" }
+          ]
+        },
+        {
+          "title": "样品管理",
+          "items": [
+            { "label": "送样检验记录", "roles": ["SQE", "QC"], "path": "/srm/sample", "desc": "新供应商样品承认" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "quality_stat",
+      "title": "质量统计",
+      "icon": "ri-pie-chart-line",
+      "groups": [
+        {
+          "title": "检验分析",
+          "items": [
+            { "label": "检验合格率报表", "roles": ["QC", "MGR"], "path": "/rpt/qms/rate", "desc": "各环节良率趋势" }
+          ]
+        },
+        {
+          "title": "异常分析",
+          "items": [
+            { "label": "不良柏拉图", "roles": ["QC", "PE"], "path": "/rpt/qms/pareto", "desc": "缺陷分布分析" }
+          ]
+        },
+        {
+          "title": "供应商分析",
+          "items": [
+            { "label": "供应商绩效评分", "roles": ["SQE"], "path": "/rpt/srm/score", "desc": "供方质量排名" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "monitor",
+      "title": "接口监控",
+      "icon": "ri-pulse-line",
+      "groups": [
+        {
+          "title": "集成管理",
+          "items": [
+            { "label": "接口日志看板", "roles": ["ADM"], "path": "/monitor/api", "desc": "系统间交互报文监控" }
+          ]
+        }
+      ]
+    }
+  ]
+}

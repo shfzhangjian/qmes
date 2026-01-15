@@ -1,0 +1,26 @@
+/**
+ * @file: src/features/System/OrgDetail.css
+ * @description: 组织架构详情样式
+ */
+
+.org-form-container {
+    padding: 10px 20px;
+}
+
+.org-parent-info {
+    background-color: #f5f7fa;
+    padding: 10px 15px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    border: 1px dashed #d9d9d9;
+    color: #666;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.org-parent-info i {
+    color: #1890ff;
+    font-size: 16px;
+}

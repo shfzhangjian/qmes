@@ -18,4 +18,11 @@ export default {
     '/system/info': load(() => import('./InfoSystemList.jsx')),
 
     '/system/iframe': load(() => import('./IframeView.jsx')),
+
+    '/system/org': load(() => import('./OrgList')),
+    '/system/users': load(() => import('./UserList')),
+    '/system/duty': load(() => import('./DutyList')),
+    '/system/role': load(() => import('./RoleList')),
+
+    '/system/menus': load(() => import('./MenuList')), // 菜单定义
 };

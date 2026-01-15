@@ -1,0 +1,772 @@
+/**
+ * @file: src/features/Production/ProcessRouteDetail.css
+ * @description: 工艺路线编辑器专用样式表
+ * @component: ProcessRouteDetail.jsx
+ */
+
+/* =============================================================================
+   1. 基础容器与遮罩 (Container & Overlay)
+   ============================================================================= */
+
+/* 全屏固定遮罩 */
+.overlay-fixed {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(3px);
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* 弹窗主体窗口 */
+.pr-window {
+    background-color: #fff;
+    width: 1200px;
+    height: 85vh;
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+    animation: slideUp 0.25s ease-out;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* 最大化状态 */
+.pr-window.maximized {
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+}
+
+/* 主内容容器 (用于定位历史抽屉) */
+.pr-main-container {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+    position: relative; /* 关键：作为历史抽屉的定位基准 */
+    background: #fff;
+    transition: background-color 0.3s;
+}
+
+/* =============================================================================
+   2. 工具栏 (Toolbar)
+   ============================================================================= */
+
+.pr-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    background-color: #fff;
+    border-bottom: 1px solid #e8e8e8;
+    flex-shrink: 0;
+    height: 56px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    z-index: 10;
+}
+
+.pr-toolbar-left, .pr-toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.pr-icon {
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, #1890ff, #096dd9);
+    color: #fff;
+    border-radius: 6px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 18px;
+    box-shadow: 0 2px 6px rgba(24, 144, 255, 0.2);
+}
+
+.pr-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    letter-spacing: 0.5px;
+}
+
+.pr-status-tag {
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+    border: 1px solid transparent;
+}
+.pr-status-tag.success { background: #f6ffed; color: #52c41a; border-color: #b7eb8f; }
+.pr-status-tag.warning { background: #fffbe6; color: #faad14; border-color: #ffe58f; }
+
+.pr-version-tag {
+    font-family: 'Consolas', monospace;
+    background: #f0f2f5;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #595959;
+    border: 1px solid #d9d9d9;
+}
+
+.pr-divider {
+    width: 1px;
+    height: 24px;
+    background: #e8e8e8;
+    margin: 0 4px;
+}
+
+/* 工具栏按钮 */
+.pr-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 0 16px;
+    height: 32px;
+    border: 1px solid #d9d9d9;
+    background: #fff;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #595959;
+    transition: all 0.2s;
+    user-select: none;
+}
+
+.pr-btn:hover:not(:disabled) {
+    color: #1890ff;
+    border-color: #1890ff;
+    background-color: #f0f7ff;
+}
+
+.pr-btn:active:not(:disabled) {
+    transform: translateY(1px);
+}
+
+.pr-btn.active {
+    background: #e6f7ff;
+    border-color: #1890ff;
+    color: #1890ff;
+    font-weight: 500;
+}
+
+.pr-btn.primary {
+    background: #1890ff;
+    color: #fff;
+    border-color: #1890ff;
+}
+.pr-btn.primary:hover {
+    background: #40a9ff;
+    border-color: #40a9ff;
+}
+
+.pr-btn.icon-only {
+    width: 32px;
+    padding: 0;
+    font-size: 16px;
+    color: #8c8c8c;
+    border-color: transparent;
+    background: transparent;
+}
+.pr-btn.icon-only:hover {
+    background: rgba(0,0,0,0.04);
+    color: #333;
+}
+
+.pr-btn.close:hover {
+    background: #ff4d4f;
+    color: #fff;
+}
+
+/* =============================================================================
+   3. 头部表单区 (Header Area)
+   ============================================================================= */
+
+.pr-header-area {
+    background: #fafafa;
+    border-bottom: 1px solid #e8e8e8;
+    padding: 20px 24px;
+    flex-shrink: 0;
+    transition: background-color 0.3s;
+}
+
+.pr-header-form {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 20px;
+}
+
+/* =============================================================================
+   4. 编辑器主体布局 (Editor Body)
+   ============================================================================= */
+
+.pr-editor-body {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+    transition: background-color 0.3s;
+}
+
+/* --- 左侧工序树 (Sidebar) --- */
+.pr-sidebar {
+    width: 280px;
+    background: #f5f7fa;
+    border-right: 1px solid #e8e8e8;
+    display: flex;
+    flex-direction: column;
+    transition: background-color 0.3s;
+    user-select: none;
+}
+
+.pr-sidebar-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid #e8e8e8;
+    font-weight: 600;
+    font-size: 13px;
+    color: #333;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff;
+    transition: background-color 0.3s;
+}
+
+.pr-node-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+}
+
+.pr-node-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 12px;
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+}
+
+.pr-node-item:hover {
+    border-color: #1890ff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    transform: translateX(2px);
+}
+
+.pr-node-item.active {
+    border-color: #1890ff;
+    background: #e6f7ff;
+}
+
+/* 选中节点的右侧指示箭头 */
+.pr-node-item.active::after {
+    content: '';
+    position: absolute;
+    right: -13px; /* 延伸到边框外 */
+    top: 50%;
+    transform: translateY(-50%);
+    border-width: 6px;
+    border-style: solid;
+    border-color: transparent transparent transparent #1890ff;
+    z-index: 5;
+}
+
+.pr-node-seq {
+    width: 24px;
+    height: 24px;
+    background: #d9d9d9;
+    color: #fff;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 24px;
+    font-size: 11px;
+    margin-right: 12px;
+    flex-shrink: 0;
+    font-weight: bold;
+}
+
+.pr-node-item.active .pr-node-seq {
+    background: #1890ff;
+}
+
+.pr-node-info {
+    flex: 1;
+    overflow: hidden;
+}
+
+.pr-node-title {
+    font-weight: 600;
+    font-size: 13px;
+    color: #333;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pr-node-code {
+    font-size: 11px;
+    color: #8c8c8c;
+}
+
+.pr-node-actions {
+    display: none;
+    margin-left: 8px;
+}
+
+.pr-node-item:hover .pr-node-actions {
+    display: block;
+}
+
+/* --- 右侧内容区 (Content) --- */
+.pr-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    overflow: hidden;
+    transition: background-color 0.3s;
+}
+
+/* Tabs 导航 */
+.pr-tabs {
+    display: flex;
+    border-bottom: 1px solid #e8e8e8;
+    padding: 0 20px;
+    background: #fafafa;
+    flex-shrink: 0;
+    transition: background-color 0.3s;
+}
+
+.pr-tab {
+    padding: 14px 24px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    font-weight: 500;
+    color: #595959;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    transition: all 0.3s;
+}
+
+.pr-tab:hover {
+    color: #1890ff;
+}
+
+.pr-tab.active {
+    color: #1890ff;
+    border-bottom-color: #1890ff;
+    background: #fff;
+    border-radius: 4px 4px 0 0;
+}
+
+.pr-tab i {
+    font-size: 15px;
+}
+
+/* Tab 内容容器：设置为 flex-col 并 hidden，让内部容器自己决定滚动 */
+.pr-tab-content {
+    flex: 1;
+    padding: 20px 24px;
+    overflow: hidden; /* 关键：禁止最外层滚动，交给内部组件 */
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+/* 表单容器：需要自己处理滚动 */
+.form-grid-2, .form-grid-3 {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 4px; /* 避免滚动条遮挡 */
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    align-content: start; /* 内容较少时靠上 */
+}
+
+/* =============================================================================
+   5. 历史版本抽屉 (History Drawer)
+   ============================================================================= */
+
+.pr-history-drawer {
+    position: absolute;
+    top: 0;
+    right: -320px; /* 默认隐藏 */
+    width: 320px;
+    height: 100%;
+    background: #fff;
+    border-left: 1px solid #e8e8e8;
+    box-shadow: -4px 0 16px rgba(0,0,0,0.08);
+    transition: right 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+}
+
+.pr-history-drawer.visible {
+    right: 0;
+}
+
+.pr-history-header {
+    height: 56px;
+    border-bottom: 1px solid #e8e8e8;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    font-weight: 600;
+    color: #333;
+    background: #fafafa;
+    font-size: 14px;
+}
+
+.pr-history-header .close-btn {
+    cursor: pointer;
+    padding: 6px;
+    color: #999;
+    font-size: 18px;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+.pr-history-header .close-btn:hover {
+    background: #ff4d4f;
+    color: #fff;
+}
+
+.pr-history-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    background: #fcfcfc;
+    /* 时间轴左边线 */
+    border-left: 2px solid #e8e8e8;
+    margin-left: 24px;
+    position: relative;
+}
+
+.pr-history-item {
+    background: #fff;
+    padding: 16px;
+    border-radius: 8px;
+    border: 1px solid #e8e8e8;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    position: relative;
+    transition: all 0.2s;
+    margin-left: 16px; /* 距离时间轴的间距 */
+}
+
+.pr-history-item.clickable {
+    cursor: pointer;
+}
+
+.pr-history-item:hover {
+    border-color: #1890ff;
+    box-shadow: 0 4px 12px rgba(24,144,255,0.12);
+    transform: translateY(-2px);
+}
+
+/* 时间轴节点 (圆点) */
+.pr-history-item::before {
+    content: '';
+    position: absolute;
+    left: -43px; /* 调整到时间轴线上 */
+    top: 20px;
+    width: 10px;
+    height: 10px;
+    background: #fff;
+    border: 3px solid #1890ff;
+    border-radius: 50%;
+    z-index: 2;
+    box-shadow: 0 0 0 4px #fcfcfc; /* 遮挡线 */
+}
+
+.ph-row-1 {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.ph-ver {
+    font-family: 'Consolas', monospace;
+    font-weight: 700;
+    color: #1890ff;
+    background: #e6f7ff;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 13px;
+}
+
+.ph-date {
+    font-size: 12px;
+    color: #999;
+}
+
+.ph-row-2 {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.ph-user {
+    display: flex;
+    align-items: center;
+}
+.ph-user i {
+    margin-right: 6px;
+    color: #1890ff;
+}
+
+.ph-action {
+    color: #faad14;
+    font-weight: 600;
+    font-size: 12px;
+}
+.ph-action.success {
+    color: #52c41a;
+}
+
+.ph-remark {
+    font-size: 12px;
+    color: #595959;
+    background: #f5f5f5;
+    padding: 8px;
+    border-radius: 4px;
+    line-height: 1.5;
+    border: 1px dashed #d9d9d9;
+}
+
+/* =============================================================================
+   6. 内部通用组件与表格 (Internal Tables)
+   ============================================================================= */
+
+/* 表格容器：撑满高度，使用Flex布局处理内部组件的拉伸 */
+.table-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* 确保在 flex 容器中占满 */
+    overflow: hidden;
+    min-height: 0; /* 关键：允许 flex 子项收缩 */
+}
+
+/* 滚动区域：占据剩余空间并滚动 */
+.table-scroll {
+    flex: 1;
+    overflow-y: auto;
+    border: 1px solid #e8e8e8;
+    border-radius: 4px;
+    background: #fff;
+    /* 平滑滚动 */
+    scroll-behavior: smooth;
+    position: relative; /* 建立定位上下文 */
+}
+
+.sub-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 13px; /* 稍微调大字号 */
+    min-width: 1400px; /* 保证表格有最小宽度，避免列过窄 */
+}
+
+.sub-table th {
+    background: #fafafa;
+    padding: 12px 12px;
+    border-bottom: 1px solid #e8e8e8;
+    text-align: left;
+    font-weight: 600;
+    color: #595959;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    white-space: nowrap; /* 表头不换行 */
+    box-shadow: 0 1px 0 #e8e8e8; /* 滚动时表头下沿阴影 */
+}
+
+.sub-table th.center, .sub-table td.center {
+    text-align: center;
+}
+
+.sub-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #f0f0f0;
+    color: #333;
+    transition: background 0.2s;
+    vertical-align: middle;
+}
+
+.sub-table tr:last-child td {
+    border-bottom: none;
+}
+
+.sub-table tr:hover td {
+    background: #f5f7fa;
+}
+
+/* 表格内输入框优化 */
+.cell-input, .cell-select {
+    width: 100%;
+    border: 1px solid transparent;
+    background: transparent;
+    padding: 6px 8px;
+    font-size: 13px;
+    border-radius: 4px;
+    box-sizing: border-box;
+    transition: all 0.2s;
+    color: #333;
+}
+
+.cell-input:hover:not(:disabled), .cell-select:hover:not(:disabled) {
+    border-color: #d9d9d9;
+    background: #fff;
+}
+
+.cell-input:focus, .cell-select:focus {
+    border-color: #1890ff;
+    background: #fff;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+}
+
+.cell-input.center {
+    text-align: center;
+}
+
+/* 空状态 */
+.empty-tip {
+    text-align: center;
+    color: #bfbfbf;
+    margin-top: 30px;
+    font-size: 13px;
+}
+
+.empty-state-full {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #d9d9d9;
+}
+.empty-state-full i {
+    font-size: 64px;
+    margin-bottom: 16px;
+    color: #e8e8e8;
+}
+.empty-state-full p {
+    font-size: 14px;
+    color: #999;
+}
+
+/* 信息提示条 */
+.info-bar {
+    background: #e6f7ff;
+    border: 1px solid #91d5ff;
+    padding: 10px 16px;
+    border-radius: 4px;
+    font-size: 13px;
+    color: #1890ff;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 2px 4px rgba(24, 144, 255, 0.05);
+    flex-shrink: 0;
+}
+
+/* 小按钮 */
+.mini-btn {
+    padding: 4px 10px;
+    font-size: 12px;
+    border-radius: 3px;
+    border: 1px solid #d9d9d9;
+    background: #fff;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #666;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.mini-btn:hover {
+    border-color: #1890ff;
+    color: #1890ff;
+}
+
+.mini-btn.primary {
+    background: #1890ff;
+    color: #fff;
+    border-color: #1890ff;
+}
+.mini-btn.primary:hover {
+    background: #40a9ff;
+    border-color: #40a9ff;
+}
+
+.mini-btn.outline {
+    border-style: dashed;
+}
+
+/* 删除图标 */
+.danger-icon {
+    color: #ff4d4f;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.2s;
+    display: inline-block;
+    vertical-align: middle;
+}
+.danger-icon:hover {
+    background: #fff1f0;
+}
+
+/* 区域标题 */
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #f0f0f0;
+    margin-bottom: 12px;
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+    flex-shrink: 0;
+}
