@@ -1,0 +1,418 @@
+/**
+ * @file: src/features/Production/WorkOrderExecution.css
+ * @description: 工单执行工作台专用样式表 (Work Order Execution Workbench Styles)
+ * @scope: 仅作用于 .mes-workbench 及其子元素
+ */
+
+/* --- 布局容器 --- */
+.mes-workbench {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: #f0f2f5;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    overflow: hidden;
+}
+
+.mes-body {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+    position: relative;
+}
+
+/* --- 顶部看板 (Header) --- */
+.mes-header {
+    height: 64px;
+    background: #001529; /* 深色主题头部 */
+    color: #fff;
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    z-index: 10;
+    flex-shrink: 0;
+}
+
+.kb-stat {
+    display: flex;
+    flex-direction: column;
+    margin-right: 48px;
+}
+
+.kb-stat label {
+    font-size: 10px;
+    opacity: 0.7;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+}
+
+.kb-stat span {
+    font-size: 18px;
+    font-weight: 700;
+    font-family: 'Consolas', 'Monaco', monospace;
+    color: #fff;
+}
+
+.kb-status-box {
+    margin-left: auto;
+    text-align: right;
+}
+
+/* --- 状态标签 (Status Tags) --- */
+.status-tag {
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 14px;
+    text-align: center;
+    min-width: 80px;
+    display: inline-block;
+}
+
+/* 状态色系定义 */
+.status-idle { background: #434343; color: #ccc; border: 1px solid #555; }
+.status-running { background: #f6ffed; color: #52c41a; border: 1px solid #b7eb8f; }
+.status-paused { background: #fff7e6; color: #faad14; border: 1px solid #ffe58f; }
+.status-error { background: #fff1f0; color: #ff4d4f; border: 1px solid #ffa39e; }
+.status-material { background: #fff0f6; color: #eb2f96; border: 1px solid #ffadd2; }
+.status-qc { background: #f9f0ff; color: #722ed1; border: 1px solid #d3adf7; }
+
+.pulse {
+    animation: statusPulse 2s infinite;
+}
+
+@keyframes statusPulse {
+    0% { box-shadow: 0 0 0 0 rgba(82, 196, 26, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(82, 196, 26, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(82, 196, 26, 0); }
+}
+
+/* --- 侧边栏 (Sidebar) --- */
+.mes-sidebar {
+    width: 280px;
+    background: #fff;
+    border-right: 1px solid #e8e8e8;
+    display: flex;
+    flex-direction: column;
+    z-index: 5;
+}
+
+.sidebar-title {
+    padding: 16px;
+    font-weight: bold;
+    font-size: 15px;
+    border-bottom: 1px solid #f0f0f0;
+    background: #fafafa;
+    color: #333;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.route-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px 20px;
+}
+
+.route-node {
+    position: relative;
+    padding-left: 48px;
+    padding-bottom: 32px;
+}
+
+.route-node::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 20px;
+    bottom: 0;
+    width: 2px;
+    background: #f0f0f0;
+}
+
+.route-node:last-child::before {
+    display: none;
+}
+
+.node-icon {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid #d9d9d9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 12px;
+    z-index: 2;
+    transition: all 0.3s;
+}
+
+.route-node.finished .node-icon { background: #52c41a; border-color: #52c41a; color: #fff; }
+.route-node.active .node-icon { background: #1890ff; border-color: #1890ff; color: #fff; box-shadow: 0 0 0 4px rgba(24,144,255,0.2); }
+.route-node.pending .node-icon { color: #999; }
+
+.node-content {
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: 6px;
+    padding: 12px;
+    transition: 0.2s;
+    cursor: default;
+}
+
+.route-node.active .node-content {
+    background: #e6f7ff;
+    border-color: #91d5ff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.qc-badge {
+    display: inline-block;
+    font-size: 10px;
+    margin-top: 6px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: #f9f0ff;
+    color: #722ed1;
+    border: 1px solid #d3adf7;
+    font-weight: 600;
+}
+
+/* --- 主操作区 (Main) --- */
+.mes-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #f5f7fa;
+    padding: 20px;
+    gap: 20px;
+    overflow-y: auto;
+}
+
+/* 控制栏 */
+.ctrl-bar {
+    background: #fff;
+    padding: 16px 24px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.step-title {
+    font-weight: 800;
+    font-size: 20px;
+    color: #1f1f1f;
+    margin-right: 12px;
+}
+
+/* 按钮样式 */
+.btn-group {
+    display: flex;
+    gap: 12px;
+}
+
+.action-btn {
+    height: 40px;
+    padding: 0 20px;
+    border-radius: 4px;
+    border: 1px solid transparent;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.action-btn:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); }
+.action-btn:active { transform: scale(0.98); }
+
+.btn-primary { background: #1890ff; color: #fff; box-shadow: 0 2px 0 rgba(24,144,255,0.1); }
+.btn-primary:hover { background: #40a9ff; }
+
+.btn-success { background: #52c41a; color: #fff; box-shadow: 0 2px 0 rgba(82,196,26,0.1); }
+.btn-success:hover { background: #73d13d; }
+
+.btn-warning { background: #fff; border-color: #faad14; color: #faad14; }
+.btn-warning:hover { color: #d48806; border-color: #d48806; }
+
+.btn-danger { background: #fff1f0; border-color: #ff4d4f; color: #ff4d4f; }
+.btn-danger:hover { background: #ff4d4f; color: #fff; }
+
+.btn-purple { background: #f9f0ff; border-color: #722ed1; color: #722ed1; }
+.btn-purple:hover { background: #722ed1; color: #fff; }
+
+.btn-divider { width: 1px; background: #e8e8e8; height: 24px; margin: 0 4px; }
+
+/* 工作卡片 */
+.work-card {
+    background: #fff;
+    padding: 24px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    transition: opacity 0.3s;
+}
+
+.work-card.disabled {
+    opacity: 0.6;
+    pointer-events: none;
+    filter: grayscale(0.8);
+}
+
+.card-title {
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 24px;
+    padding-left: 12px;
+    border-left: 4px solid #1890ff;
+}
+
+/* 输入控件 */
+.big-input {
+    width: 100%;
+    height: 48px;
+    font-size: 22px;
+    font-weight: bold;
+    padding: 0 12px;
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+    transition: 0.2s;
+}
+.big-input:focus { border-color: #1890ff; outline: none; box-shadow: 0 0 0 2px rgba(24,144,255,0.2); }
+.big-input.ok-qty { color: #1890ff; }
+.big-input.ng-qty { color: #ff4d4f; }
+
+/* 快捷入口区 */
+.shortcut-grid {
+    display: flex;
+    gap: 20px;
+}
+
+.shortcut-card {
+    flex: 1;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid #e8e8e8;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.shortcut-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+.shortcut-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+}
+
+/* --- 日志区 (Logs) --- */
+.mes-logs {
+    width: 320px;
+    background: #fff;
+    border-left: 1px solid #e8e8e8;
+    display: flex;
+    flex-direction: column;
+}
+
+.log-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+}
+
+.log-item {
+    margin-bottom: 24px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #333;
+    position: relative;
+    padding-left: 16px;
+}
+
+.log-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 7px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #d9d9d9;
+}
+
+.log-time {
+    font-size: 11px;
+    color: #999;
+    font-family: monospace;
+    display: block;
+    margin-bottom: 2px;
+}
+
+/* --- 模态框通用覆盖层 --- */
+.modal-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 5000;
+    background: rgba(0, 0, 0, 0.65);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* 让子组件在模态框中显示得更自然，去掉部分全屏样式 */
+.modal-wrapper .aed-window,
+.modal-wrapper .ncr-window,
+.modal-wrapper .iqr-window,
+.modal-wrapper .mdo-window {
+    max-height: 90vh;
+    max-width: 90vw;
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-wrapper .mdo-body {
+    overflow-y: auto;
+}

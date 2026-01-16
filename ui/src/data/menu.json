@@ -34,7 +34,7 @@
             { "label": "生产看板大屏", "roles": ["MGR", "SUPER_ADMIN"], "path": "", "icon": "ri-prohibited-line", "desc": "建设中" },
             { "label": "仓库看板大屏", "roles": ["MGR", "SUPER_ADMIN"], "path": "", "icon": "ri-prohibited-line", "desc": "建设中" },
             { "label": "质量看板大屏", "roles": ["MGR", "SUPER_ADMIN"], "path": "", "icon": "ri-prohibited-line", "desc": "建设中" },
-            { "label": "现场作业看板", "roles": ["MGR", "SUPER_ADMIN"], "path": "", "icon": "ri-prohibited-line", "desc": "建设中" }
+            { "label": "现场作业看板", "roles": ["MGR", "SUPER_ADMIN"], "path": "/production/plan/exec", "icon": "ri-slideshow-line", "desc": "建设中" }
           ]
         }
       ]
@@ -80,7 +80,7 @@
         {
           "title": "通用档案",
           "items": [
-            { "label": "客商信息档案", "roles": ["ADM", "SUPER_ADMIN"], "path": "/business/partner", "icon": "ri-prohibited-line", "desc": "待开发" },
+            { "label": "客商信息档案", "roles": ["ADM", "SUPER_ADMIN"], "path": "/business/partner", "icon": "ri-contacts-book-2-line", "desc": "待开发" },
             { "label": "计量单位配置", "roles": ["ADM", "SUPER_ADMIN"], "path": "", "icon": "ri-prohibited-line", "desc": "待开发" },
             { "label": "数据字典配置", "roles": ["ADM", "SUPER_ADMIN"], "path": "", "icon": "ri-prohibited-line", "desc": "待开发" },
             { "label": "编码生成规则", "roles": ["ADM", "SUPER_ADMIN"], "path": "", "icon": "ri-prohibited-line", "desc": "待开发" },
@@ -167,10 +167,9 @@
         {
           "title": "计划排程",
           "items": [
-            { "label": "生产计划", "roles": ["PMC", "SUPER_ADMIN"], "path": "", "icon": "ri-prohibited-line", "desc": "MPS" },
-            { "label": "生产订单", "roles": ["PMC", "SUPER_ADMIN"], "path": "", "icon": "ri-prohibited-line", "desc": "SO to WO" },
-            { "label": "生产工单", "roles": ["PMC", "SUPER_ADMIN"], "path": "", "icon": "ri-prohibited-line", "desc": "Work Order" },
-            { "label": "生产跟踪", "roles": ["PMC", "SUPER_ADMIN"], "path": "", "icon": "ri-prohibited-line", "desc": "Tracking" }
+            { "label": "生产计划", "roles": ["PMC", "SUPER_ADMIN"], "path": "/production/plan/schedule", "icon": "ri-calendar-event-line", "desc": "MPS" },
+            { "label": "生产工单", "roles": ["PMC", "SUPER_ADMIN"], "path": "/production/plan/order", "icon": "ri-file-list-3-line", "desc": "Work Order" },
+            { "label": "生产跟踪", "roles": ["PMC", "SUPER_ADMIN"], "path": "/production/plan/exec", "icon": "ri-road-map-line", "desc": "Tracking" }
           ]
         }
       ]
@@ -322,7 +321,8 @@
           ]
         }
       ]
-    },{
+    },
+    {
       "id": "dev_debug",
       "title": "开发调试",
       "icon": "ri-bug-line",
