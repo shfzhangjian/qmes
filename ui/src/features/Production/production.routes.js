@@ -23,5 +23,5 @@ export default {
     '/production/plan/order': load(() => import('./ProductionOrderList')), // 生产订单管理
     '/production/plan/schedule': load(() => import('./ProductionPlanList')), // 生产计划排程
 
-    '/production/plan/exec': load(() => import('./WorkOrderExecution.jsx')), // 生产计划排程
+    '/production/plan/exec': load(() => import('./MESExecutionDashboard.jsx')), // 生产计划排程
 };
