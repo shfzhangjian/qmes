@@ -17,35 +17,41 @@
     border-right: 1px solid #e5e7eb;
     box-shadow: 4px 0 15px -3px rgba(0, 0, 0, 0.1);
     z-index: 30;
-    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* 优化过渡动画 */
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     flex-shrink: 0;
 }
 
 .mes-sidebar.collapsed {
-    width: 48px; /* 收缩后更窄一点，只留图标空间 */
+    width: 0; /* 收缩后宽度为0 */
+    border-right: none;
 }
 
-/* 修改：收缩按钮改为侧边标签风格 */
+/* 侧边收缩按钮/标签 */
 .mes-sidebar-toggle {
     position: absolute;
     top: 50%;
-    right: -16px; /* 贴合边缘外侧 */
+    right: -16px;
     width: 16px;
-    height: 48px; /* 垂直长条形 */
+    height: 48px;
     background-color: #fff;
     border: 1px solid #e5e7eb;
-    border-left: none; /* 去掉左边框，与侧边栏融合 */
-    border-radius: 0 6px 6px 0; /* 右侧圆角 */
+    border-left: none;
+    border-radius: 0 6px 6px 0;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: 4px 0 4px -2px rgba(0, 0, 0, 0.05); /* 轻微阴影 */
+    box-shadow: 4px 0 4px -2px rgba(0, 0, 0, 0.05);
     z-index: 40;
     color: #9ca3af;
     transform: translateY(-50%);
     transition: background-color 0.2s, color 0.2s;
+    overflow: visible;
+}
+
+.mes-sidebar.collapsed .mes-sidebar-toggle {
+    border-left: 1px solid #e5e7eb;
 }
 
 .mes-sidebar-toggle:hover {
@@ -60,25 +66,18 @@
     border-bottom: 1px solid #374151;
     white-space: nowrap;
     overflow: hidden;
-    height: 72px; /* 固定高度，防止收缩时跳动 */
+    height: 72px;
     box-sizing: border-box;
 }
 
 .mes-sidebar.collapsed .mes-sidebar-header {
-    padding: 20px 0; /* 收缩时居中 */
-    display: flex;
-    justify-content: center;
+    display: none;
 }
 
 .mes-title-row {
     display: flex;
     align-items: center;
     gap: 10px;
-}
-
-.mes-sidebar.collapsed .mes-title-row {
-    justify-content: center;
-    gap: 0;
 }
 
 .mes-icon-box {
@@ -117,9 +116,7 @@
 .mes-sidebar.collapsed .mes-user-info,
 .mes-sidebar.collapsed .mes-search-box,
 .mes-sidebar.collapsed .mes-order-list {
-    display: none; /* 彻底隐藏 */
-    opacity: 0;
-    pointer-events: none;
+    display: none;
 }
 
 .mes-search-box {
@@ -165,6 +162,13 @@
     flex-direction: column;
     gap: 12px;
     overflow-x: hidden;
+    /* 隐藏滚动条 */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+}
+
+.mes-order-list::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
 }
 
 .mes-order-card {
@@ -301,6 +305,13 @@
     overflow-y: auto;
     padding: 24px;
     background-color: #f8fafc;
+    /* 隐藏滚动条 */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+}
+
+.mes-content-scroll::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
 }
 
 /* KPI 卡片 */
@@ -599,6 +610,13 @@
     flex: 1;
     overflow-y: auto;
     padding: 24px;
+    /* 隐藏滚动条 */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+}
+
+.mes-page-content::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
 }
 
 .mes-input-group {

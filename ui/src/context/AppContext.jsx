@@ -30,8 +30,8 @@ export const AppProvider = ({ children }) => {
   const [menuData, setMenuData] = useState([]);
   const [favorites, setFavorites] = useState(['待办任务', '我的消息']);
 
-  const systemTitle = "禾臣新材料数字化智造协同一体化平台";
-  const systemSubtitle = "基于安徽学府智能化开发架构";
+  const systemTitle = "禾臣新材料MES+QMES一体化平台";
+  const systemSubtitle = "基于智能化开发架构";
 
   // ============================================================
   // 核心路由逻辑 (Hash Router Engine)

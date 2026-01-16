@@ -621,7 +621,7 @@ export default function MESExecutionDashboard() {
                 <div className="mes-sidebar-header">
                     <div className="mes-title-row">
                         <div className="mes-icon-box"><Activity size={20} color="white" /></div>
-                        <h1 className="mes-title-text">MES 作业看板</h1>
+                        <h1 className="mes-title-text">工单执行面板</h1>
                     </div>
                     <div className="mes-user-info">
                         {MOCK_DATA.currentUser.shift} | {MOCK_DATA.currentUser.station}
@@ -755,10 +755,10 @@ export default function MESExecutionDashboard() {
                             </div>
 
                             {/* Process Route Stepper */}
-                            <div className="mes-card" style={{marginBottom:'24px', padding:'24px'}}>
-                                <h3 style={{fontWeight:'bold', color:'#1f2937', marginBottom:'24px', display:'flex', alignItems:'center', gap:'8px'}}>
+                            <div className="mes-card" style={{marginBottom:'10px', padding:'10px'}}>
+                                <h3 style={{fontWeight:'bold', color:'#1f2937', marginBottom:'10px', display:'flex', alignItems:'center', gap:'8px'}}>
                                     <History size={20} color="#64748b" />
-                                    工艺路线执行监控 (Process Routing)
+                                    工艺路线执行监控
                                 </h3>
                                 <div className="mes-stepper-container">
                                     <div className="mes-stepper-line"></div>
@@ -792,7 +792,7 @@ export default function MESExecutionDashboard() {
 
                                 {/* Left: Standard Operations */}
                                 <div className="mes-card">
-                                    <h3 style={{fontWeight:'bold', color:'#374151', marginBottom:'16px'}}>作业控制 (Operation Control)</h3>
+                                    <h3 style={{fontWeight:'bold', color:'#374151', marginBottom:'16px'}}>作业控制</h3>
                                     <div className="mes-btn-grid">
 
                                         {currentOrder.status !== 'RUNNING' ? (
@@ -853,7 +853,7 @@ export default function MESExecutionDashboard() {
 
                                 {/* Right: Andon & Exception */}
                                 <div className="mes-card">
-                                    <h3 style={{fontWeight:'bold', color:'#374151', marginBottom:'16px'}}>辅助与异常 (Andon)</h3>
+                                    <h3 style={{fontWeight:'bold', color:'#374151', marginBottom:'16px'}}>操作面板</h3>
                                     <div className="mes-btn-grid-2">
                                         <button
                                             onClick={() => setActiveModal('ABNORMAL')}
